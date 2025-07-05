@@ -1,0 +1,9 @@
+### Update Post
+PUT http://localhost:8082/api/posts/1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "title": "Updated Title",
+  "content": "Updated content."
+}

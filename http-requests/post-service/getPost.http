@@ -1,0 +1,2 @@
+### Get Post by ID
+GET http://localhost:8082/api/posts/1

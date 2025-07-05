@@ -1,0 +1,227 @@
+### Blogit Interaction Service HTTP Requests
+### Base URLs
+@baseUrl = http://localhost:8080
+@directUrl = http://localhost:8083
+@contentType = application/json
+
+### Variables (Update these after getting real tokens and IDs)
+@jwtToken = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+@userId = 550e8400-e29b-41d4-a716-446655440002
+@postId = 550e8400-e29b-41d4-a716-446655440001
+@commentId = 550e8400-e29b-41d4-a716-446655440003
+
+###############################################
+# POST LIKES ENDPOINTS
+###############################################
+
+### 1. Like a Post (via API Gateway)
+POST {{baseUrl}}/api/v1/interactions/posts/{{postId}}/likes
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+### 2. Like a Post (Direct)
+POST {{directUrl}}/api/v1/interactions/posts/{{postId}}/likes
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+### 3. Unlike a Post
+DELETE {{baseUrl}}/api/v1/interactions/posts/{{postId}}/likes
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+
+### 4. Get Post Likes (with pagination)
+GET {{baseUrl}}/api/v1/interactions/posts/{{postId}}/likes?page=0&size=10&sort=createdAt,desc
+Authorization: Bearer {{jwtToken}}
+
+### 5. Check User Like Status for Post
+GET {{baseUrl}}/api/v1/interactions/posts/{{postId}}/likes/check
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+
+### 6. Bulk Check Like Status
+POST {{baseUrl}}/api/v1/interactions/posts/likes/bulk-check
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+{
+  "postIds": [
+    "550e8400-e29b-41d4-a716-446655440001",
+    "550e8400-e29b-41d4-a716-446655440002",
+    "550e8400-e29b-41d4-a716-446655440003"
+  ]
+}
+
+### 7. Get User's Likes
+GET {{baseUrl}}/api/v1/interactions/users/{{userId}}/likes?page=0&size=20
+Authorization: Bearer {{jwtToken}}
+
+###############################################
+# COMMENTS ENDPOINTS
+###############################################
+
+### 8. Create Comment on Post
+POST {{baseUrl}}/api/v1/interactions/posts/{{postId}}/comments
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "This is a great post! Thanks for sharing."
+}
+
+### 9. Create Reply to Comment
+POST {{baseUrl}}/api/v1/interactions/posts/{{postId}}/comments
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "I completely agree with your point!",
+  "parentCommentId": "{{commentId}}"
+}
+
+### 10. Get Comments for Post (with replies)
+GET {{baseUrl}}/api/v1/interactions/posts/{{postId}}/comments?page=0&size=20&includeReplies=true&maxDepth=3&sort=createdAt,desc
+Authorization: Bearer {{jwtToken}}
+
+### 11. Update Comment
+PUT {{baseUrl}}/api/v1/interactions/comments/{{commentId}}
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "This is an updated comment with new information."
+}
+
+### 12. Delete Comment
+DELETE {{baseUrl}}/api/v1/interactions/comments/{{commentId}}
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+
+### 13. Get User's Comments
+GET {{baseUrl}}/api/v1/interactions/users/{{userId}}/comments?page=0&size=20
+Authorization: Bearer {{jwtToken}}
+
+###############################################
+# COMMENT LIKES ENDPOINTS
+###############################################
+
+### 14. Like a Comment
+POST {{baseUrl}}/api/v1/interactions/comments/{{commentId}}/likes
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+### 15. Unlike a Comment
+DELETE {{baseUrl}}/api/v1/interactions/comments/{{commentId}}/likes
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+
+###############################################
+# HEALTH CHECK AND SERVICE INFO
+###############################################
+
+### 16. Health Check (Direct)
+GET {{directUrl}}/actuator/health
+
+### 17. Service Info (Direct)
+GET {{directUrl}}/actuator/info
+
+### 18. Swagger UI (Direct)
+GET {{directUrl}}/swagger-ui/index.html
+
+### 19. OpenAPI Docs (Direct)
+GET {{directUrl}}/v3/api-docs
+
+###############################################
+# ERROR TESTING
+###############################################
+
+### 20. Test Validation Error (Invalid Content)
+POST {{baseUrl}}/api/v1/interactions/posts/{{postId}}/comments
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+{
+  "content": ""
+}
+
+### 21. Test Unauthorized Access (No Token)
+GET {{baseUrl}}/api/v1/interactions/posts/{{postId}}/likes
+
+### 22. Test Invalid Post ID
+POST {{baseUrl}}/api/v1/interactions/posts/invalid-uuid/likes
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+### 23. Test Long Comment (Should fail validation)
+POST {{baseUrl}}/api/v1/interactions/posts/{{postId}}/comments
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "This is a very long comment that exceeds the maximum allowed length of 500 characters. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. This text is intentionally long to test validation."
+}
+
+###############################################
+# SAMPLE DATA CREATION SEQUENCE
+###############################################
+
+### 24. Create Multiple Test Comments
+POST {{baseUrl}}/api/v1/interactions/posts/{{postId}}/comments
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "First test comment for interaction testing"
+}
+
+###
+
+POST {{baseUrl}}/api/v1/interactions/posts/{{postId}}/comments
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "Second test comment with different content"
+}
+
+###
+
+POST {{baseUrl}}/api/v1/interactions/posts/{{postId}}/comments
+Authorization: Bearer {{jwtToken}}
+X-User-ID: {{userId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "Third comment to test pagination and sorting"
+}
+
+###############################################
+# NOTES
+###############################################
+
+# Before running these requests:
+# 1. Start the services using ./run.sh
+# 2. Register and login through user-service to get a valid JWT token
+# 3. Create a post through post-service to get a valid post ID
+# 4. Update the @jwtToken, @userId, and @postId variables above
+# 5. Run the requests in sequence to test different scenarios
+
+# Expected Response Codes:
+# 200: OK (GET requests)
+# 201: Created (POST requests for creation)
+# 204: No Content (DELETE requests)
+# 400: Bad Request (validation errors)
+# 401: Unauthorized (missing/invalid token)
+# 404: Not Found (resource doesn't exist)
+# 409: Conflict (duplicate like attempts)

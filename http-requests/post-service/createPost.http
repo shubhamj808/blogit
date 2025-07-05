@@ -1,0 +1,9 @@
+### Create Post
+POST http://localhost:8082/api/posts
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "title": "Sample Post",
+  "content": "This is a sample post."
+}

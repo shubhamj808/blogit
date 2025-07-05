@@ -1,0 +1,76 @@
+server:
+  port: 8082
+
+spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password: blogit123
+      ssl:
+        enabled: false
+  application:
+    name: post-service
+  
+  profiles:
+    active: default
+  
+  datasource:
+    url: jdbc:postgresql://postgres:5432/blogit_post_db
+    username: blogit
+    password: blogit123
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: post-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.blogit.post.*"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://alloy:4318/v1/traces
+
+app:
+  jwt:
+    secret: mySecretKey
+
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    com.blogit.post: DEBUG
+    org.springframework.kafka: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+

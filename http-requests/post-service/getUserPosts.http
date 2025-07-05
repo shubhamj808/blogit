@@ -1,0 +1,3 @@
+### Get User Posts
+GET http://localhost:8082/api/posts?userId=1&page=0&size=10
+X-User-Id: 1

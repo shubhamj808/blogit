@@ -1,0 +1,116 @@
+### Blogit User Service API Tests
+### Base URL: http://localhost:8081/api
+
+### Variables
+@baseUrl = http://localhost:8081/api
+@gatewayUrl = http://localhost:8080/api
+@authToken = 
+
+### 1. Health Check
+GET {{baseUrl}}/../actuator/health
+
+### 2. User Registration
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "johndoe",
+  "email": "john.doe@example.com",
+  "password": "securePassword123",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+### 3. User Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "johndoe",
+  "password": "securePassword123"
+}
+
+> {%
+client.test("Login successful", function() {
+    client.assert(response.status === 200, "Response status is not 200");
+    client.global.set("authToken", response.body.token);
+});
+%}
+
+### 4. Get Current User Profile
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+
+### 5. Update User Profile
+PUT {{baseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "bio": "Software developer passionate about blogging",
+  "location": "San Francisco, CA",
+  "website": "https://johndoe.dev"
+}
+
+### 6. Search Users
+GET {{baseUrl}}/users/search?query=john
+Authorization: Bearer {{authToken}}
+
+### 7. Get User by ID
+GET {{baseUrl}}/users/1
+Authorization: Bearer {{authToken}}
+
+### 8. Follow User
+POST {{baseUrl}}/users/follow/2
+Authorization: Bearer {{authToken}}
+
+### 9. Unfollow User
+DELETE {{baseUrl}}/users/unfollow/2
+Authorization: Bearer {{authToken}}
+
+### 10. Get User Followers
+GET {{baseUrl}}/users/1/followers?page=0&size=10
+Authorization: Bearer {{authToken}}
+
+### 11. Get User Following
+GET {{baseUrl}}/users/1/following?page=0&size=10
+Authorization: Bearer {{authToken}}
+
+### 12. Check Username Availability
+GET {{baseUrl}}/users/checkUsernameAvailability?username=newuser
+
+### 13. Check Email Availability
+GET {{baseUrl}}/users/checkEmailAvailability?email=new@example.com
+
+### ===== VIA API GATEWAY =====
+
+### 14. Register via Gateway
+POST {{gatewayUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "janesmith",
+  "email": "jane.smith@example.com",
+  "password": "securePassword456",
+  "firstName": "Jane",
+  "lastName": "Smith"
+}
+
+### 15. Login via Gateway
+POST {{gatewayUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "janesmith",
+  "password": "securePassword456"
+}
+
+### 16. Get Profile via Gateway
+GET {{gatewayUrl}}/users/me
+Authorization: Bearer {{authToken}}
+
+### 17. Search Users via Gateway
+GET {{gatewayUrl}}/users/search?query=jane
+Authorization: Bearer {{authToken}}

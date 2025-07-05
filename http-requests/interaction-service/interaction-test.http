@@ -1,0 +1,181 @@
+### Interaction Service Direct Testing
+### This file contains requests for testing the interaction service directly (bypassing API Gateway)
+
+@baseUrl = http://localhost:8083
+@contentType = application/json
+
+### Test Variables
+@testUserId = 123e4567-e89b-12d3-a456-426614174000
+@testPostId = 123e4567-e89b-12d3-a456-426614174001
+@testCommentId = 123e4567-e89b-12d3-a456-426614174002
+
+###############################################
+# HEALTH CHECK AND SERVICE STATUS
+###############################################
+
+### 1. Health Check
+GET {{baseUrl}}/actuator/health
+
+### 2. Service Info
+GET {{baseUrl}}/actuator/info
+
+### 3. Metrics
+GET {{baseUrl}}/actuator/metrics
+
+### 4. Swagger Documentation
+GET {{baseUrl}}/swagger-ui/index.html
+
+### 5. OpenAPI JSON
+GET {{baseUrl}}/v3/api-docs
+
+###############################################
+# POST LIKES (Direct Testing)
+###############################################
+
+### 6. Like a Post
+POST {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/likes
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+### 7. Unlike a Post
+DELETE {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/likes
+X-User-ID: {{testUserId}}
+
+### 8. Get Post Likes
+GET {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/likes?page=0&size=10
+
+### 9. Check Like Status
+GET {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/likes/check
+X-User-ID: {{testUserId}}
+
+### 10. Bulk Like Check
+POST {{baseUrl}}/api/v1/interactions/posts/likes/bulk-check
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+{
+  "postIds": [
+    "{{testPostId}}",
+    "123e4567-e89b-12d3-a456-426614174002",
+    "123e4567-e89b-12d3-a456-426614174003"
+  ]
+}
+
+###############################################
+# COMMENTS (Direct Testing)
+###############################################
+
+### 11. Create Comment
+POST {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/comments
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "This is a test comment for direct service testing"
+}
+
+### 12. Create Reply
+POST {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/comments
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "This is a reply to the comment above",
+  "parentCommentId": "{{testCommentId}}"
+}
+
+### 13. Get Comments for Post
+GET {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/comments?page=0&size=20&includeReplies=true
+
+### 14. Update Comment
+PUT {{baseUrl}}/api/v1/interactions/comments/{{testCommentId}}
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "This is an updated comment content"
+}
+
+### 15. Delete Comment
+DELETE {{baseUrl}}/api/v1/interactions/comments/{{testCommentId}}
+X-User-ID: {{testUserId}}
+
+### 16. Get User Comments
+GET {{baseUrl}}/api/v1/interactions/users/{{testUserId}}/comments?page=0&size=20
+
+###############################################
+# COMMENT LIKES (Direct Testing)
+###############################################
+
+### 17. Like Comment
+POST {{baseUrl}}/api/v1/interactions/comments/{{testCommentId}}/likes
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+### 18. Unlike Comment
+DELETE {{baseUrl}}/api/v1/interactions/comments/{{testCommentId}}/likes
+X-User-ID: {{testUserId}}
+
+###############################################
+# ERROR SCENARIOS
+###############################################
+
+### 19. Test Invalid UUID
+POST {{baseUrl}}/api/v1/interactions/posts/invalid-uuid/likes
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+### 20. Test Empty Comment
+POST {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/comments
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+{
+  "content": ""
+}
+
+### 21. Test Missing User ID
+POST {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/likes
+Content-Type: {{contentType}}
+
+### 22. Test Long Comment (Should fail)
+POST {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/comments
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium."
+}
+
+###############################################
+# PERFORMANCE TESTING
+###############################################
+
+### 23. Create Multiple Comments (Performance Test)
+POST {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/comments
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "Performance test comment 1"
+}
+
+###
+
+POST {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/comments
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "Performance test comment 2"
+}
+
+###
+
+POST {{baseUrl}}/api/v1/interactions/posts/{{testPostId}}/comments
+X-User-ID: {{testUserId}}
+Content-Type: {{contentType}}
+
+{
+  "content": "Performance test comment 3"
+}
