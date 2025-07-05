@@ -209,5 +209,4 @@ MIT License - see LICENSE.md for details
 
 For issues and questions:
 - GitHub Issues
-- Email: support@blogit.com
 - Documentation: /docs
