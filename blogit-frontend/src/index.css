@@ -3,8 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  html, body, #root {
+    height: 100%;
+    min-height: 100%;
+  }
   body {
-    @apply antialiased text-gray-900;
+    @apply antialiased text-gray-900 bg-gray-50 font-sans;
   }
 }
 
@@ -24,4 +28,4 @@
   .form-label {
     @apply block text-sm font-medium text-gray-700;
   }
-} 
+}

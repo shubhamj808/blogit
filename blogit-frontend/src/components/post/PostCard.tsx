@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { Post } from '../../types/post';
-import { RootState } from '../../redux/store';
+import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import { PostResponse } from '../../types/post';
 import { formatDistanceToNow } from 'date-fns';
-import { likePost, unlikePost } from '../../api/interactionService';
+import { interactionService } from '../../api/interactionService';
 
 interface PostCardProps {
-  post: Post;
+  post: PostResponse;
   onLikeUpdate?: (postId: string, liked: boolean) => void;
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post, onLikeUpdate }) => {
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const [isLiked, setIsLiked] = useState(post.liked);
-  const [likeCount, setLikeCount] = useState(post.likeCount);
+  const { isAuthenticated, user } = useAppSelector(state => state.auth);
+  const [isLiked, setIsLiked] = useState(post.isLiked || false);
+  const [likeCount, setLikeCount] = useState(post.likesCount || 0);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLikeClick = async () => {
@@ -23,10 +22,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, onLikeUpdate }) => {
     setIsLoading(true);
     try {
       if (isLiked) {
-        await unlikePost(post.id);
+        await interactionService.unlikePost(post.id);
         setLikeCount(prev => prev - 1);
       } else {
-        await likePost(post.id);
+        await interactionService.likePost(post.id);
         setLikeCount(prev => prev + 1);
       }
       setIsLiked(!isLiked);
@@ -42,19 +41,33 @@ const PostCard: React.FC<PostCardProps> = ({ post, onLikeUpdate }) => {
     <div className="bg-white shadow rounded-lg overflow-hidden">
       <div className="p-6">
         <div className="flex items-center">
-          <Link to={`/profile/${post.author.id}`} className="flex items-center">
-            <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-              <span className="text-xl text-gray-600">
-                {post.author.username.charAt(0).toUpperCase()}
-              </span>
+          {post.author ? (
+            <Link to={`/profile/${post.author.id}`} className="flex items-center">
+              <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-xl text-gray-600">
+                  {post.author.username.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-900">{post.author.username}</p>
+                <p className="text-xs text-gray-500">
+                  {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                </p>
+              </div>
+            </Link>
+          ) : (
+            <div className="flex items-center">
+              <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-xl text-gray-600">U</span>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-900">Unknown User</p>
+                <p className="text-xs text-gray-500">
+                  {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                </p>
+              </div>
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-900">{post.author.username}</p>
-              <p className="text-xs text-gray-500">
-                {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-              </p>
-            </div>
-          </Link>
+          )}
         </div>
         <Link to={`/post/${post.id}`}>
           <h2 className="mt-4 text-xl font-semibold text-gray-900">{post.title}</h2>
@@ -101,10 +114,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, onLikeUpdate }) => {
                   d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                 />
               </svg>
-              <span>{post.commentCount}</span>
+              <span>{post.commentsCount || 0}</span>
             </Link>
           </div>
-          {user?.id === post.author.id && (
+          {user?.id && post.author && user.id === post.author.id && (
             <Link
               to={`/post/edit/${post.id}`}
               className="text-sm text-gray-500 hover:text-indigo-600"
@@ -118,4 +131,4 @@ const PostCard: React.FC<PostCardProps> = ({ post, onLikeUpdate }) => {
   );
 };
 
-export default PostCard; 
+export default PostCard;

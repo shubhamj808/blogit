@@ -2,6 +2,7 @@ export interface UserRegistrationDto {
   username: string;
   email: string;
   password: string;
+  confirmPassword: string;
   fullName: string;
   dateOfBirth?: Date;
   acceptTerms: boolean;
@@ -29,6 +30,11 @@ export interface UserUpdateDto {
   isPrivate?: boolean;
 }
 
+export interface AuthResponse {
+  user: UserResponseDto;
+  token: string;
+}
+
 export interface UserResponseDto {
   id: string;
   username: string;
@@ -49,6 +55,7 @@ export interface UserResponseDto {
   likesCount: number;
   lastActive?: Date;
   joinedAt: Date;
+  isFollowedByCurrentUser?: boolean;
 }
 
 export interface ApiResponse<T> {
@@ -67,4 +74,4 @@ export interface ApiResponse<T> {
     totalPages: number;
   };
   token?: string;
-} 
+}

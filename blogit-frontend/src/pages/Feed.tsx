@@ -1,34 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../redux/store';
-import { Post } from '../types/post';
-import { getPosts } from '../api/postService';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { fetchFeed } from '../redux/slices/postSlice';
 import PostCard from '../components/post/PostCard';
 
 const Feed: React.FC = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAppSelector(state => state.auth);
+  const { feedPosts: posts, loading, error } = useAppSelector(state => state.post);
 
   const fetchPosts = async (pageNum: number) => {
     try {
-      setLoading(true);
-      const response = await getPosts(pageNum);
-      if (pageNum === 1) {
-        setPosts(response.data);
-      } else {
-        setPosts(prev => [...prev, ...response.data]);
-      }
-      setHasMore(response.data.length === 10); // Assuming page size is 10
-      setError(null);
+      const result = await dispatch(fetchFeed({ page: pageNum - 1, size: 10 })).unwrap(); // Convert to 0-indexed for API
+      setHasMore(result.length === 10); // Assuming page size is 10
     } catch (err) {
-      setError('Failed to load posts. Please try again later.');
       console.error('Error fetching posts:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -45,13 +32,9 @@ const Feed: React.FC = () => {
   };
 
   const handleLikeUpdate = (postId: string, liked: boolean) => {
-    setPosts(prevPosts =>
-      prevPosts.map(post =>
-        post.id === postId
-          ? { ...post, liked, likeCount: liked ? post.likeCount + 1 : post.likeCount - 1 }
-          : post
-      )
-    );
+    // This will be handled by the Redux state when we implement the like functionality
+    // The post state will be updated through the Redux store
+    console.log('Post liked/unliked:', postId, liked);
   };
 
   if (error) {
@@ -69,7 +52,7 @@ const Feed: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gray-50 space-y-6">
       {posts.map(post => (
         <PostCard key={post.id} post={post} onLikeUpdate={handleLikeUpdate} />
       ))}
@@ -100,4 +83,4 @@ const Feed: React.FC = () => {
   );
 };
 
-export default Feed; 
+export default Feed;

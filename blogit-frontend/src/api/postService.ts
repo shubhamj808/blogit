@@ -1,5 +1,5 @@
 import api from './axiosConfig';
-import { CreatePostRequest, UpdatePostRequest, PostResponse } from '@/types/post';
+import { CreatePostRequest, UpdatePostRequest, PostResponse } from '../types/post';
 
 const BASE_PATH = import.meta.env.VITE_POST_SERVICE_PATH || '/api/posts';
 
@@ -60,4 +60,4 @@ export const postService = {
 
   publishDraft: (draftId: string) =>
     api.post(`${BASE_PATH}/drafts/${draftId}/publish`),
-}; 
+};

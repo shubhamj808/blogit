@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { userService } from '@/api/userService';
-import { UserLoginDto, UserRegistrationDto, UserResponseDto } from '@/types/user';
-import { jwtDecode } from 'jwt-decode';
+import { userService } from '../../api/userService';
+import { UserLoginDto, UserRegistrationDto, UserResponseDto, AuthResponse } from '../../types/user';
 
 interface AuthState {
   user: UserResponseDto | null;
@@ -24,9 +23,9 @@ export const login = createAsyncThunk(
   async (credentials: UserLoginDto, { rejectWithValue }) => {
     try {
       const response = await userService.login(credentials);
-      const { token, data: user } = response.data;
-      localStorage.setItem('token', token!);
-      return { user, token };
+      const authResponse = response.data as AuthResponse;
+      localStorage.setItem('token', authResponse.token);
+      return authResponse;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
@@ -131,4 +130,4 @@ const authSlice = createSlice({
 });
 
 export const { clearError } = authSlice.actions;
-export default authSlice.reducer; 
+export default authSlice.reducer;

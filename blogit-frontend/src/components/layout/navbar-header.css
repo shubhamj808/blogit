@@ -1,0 +1,64 @@
+.custom-navbar {
+  background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+  color: #fff;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.custom-navbar .navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.custom-navbar .navbar-brand {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #fff;
+  text-decoration: none;
+  margin-right: 2rem;
+}
+.custom-navbar .navbar-link {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  margin-right: 1.5rem;
+  transition: color 0.2s;
+}
+.custom-navbar .navbar-link:hover {
+  color: #c7d2fe;
+}
+.custom-navbar .navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.custom-navbar .btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.custom-navbar .btn-login {
+  background: #fff;
+  color: #2563eb;
+  margin-right: 0.5rem;
+}
+.custom-navbar .btn-login:hover {
+  background: #dbeafe;
+}
+.custom-navbar .btn-register {
+  background: #1e40af;
+  color: #fff;
+}
+.custom-navbar .btn-register:hover {
+  background: #2563eb;
+}

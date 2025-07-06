@@ -1,5 +1,5 @@
 import api from './axiosConfig';
-import { CreateCommentRequest, UpdateCommentRequest, CommentDto, LikeDto } from '@/types/interaction';
+import { CreateCommentRequest, UpdateCommentRequest, CommentDto, LikeDto } from '../types/interaction';
 
 const BASE_PATH = import.meta.env.VITE_INTERACTION_SERVICE_PATH || '/api/interactions';
 
@@ -54,4 +54,4 @@ export const interactionService = {
     api.get(`${BASE_PATH}/users/${userId}/likes`, {
       params: { page, size }
     }),
-}; 
+};

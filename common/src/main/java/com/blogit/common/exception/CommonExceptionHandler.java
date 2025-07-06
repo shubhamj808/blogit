@@ -1,12 +1,15 @@
 package com.blogit.common.exception;
 
+import com.blogit.common.dto.ApiResponse;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@RestControllerAdvice
 @Slf4j
 public abstract class CommonExceptionHandler {
     
@@ -37,4 +40,4 @@ public abstract class CommonExceptionHandler {
         log.error("Resource not found", ex);
         return ApiResponse.error(ex.getMessage());
     }
-} 
+}

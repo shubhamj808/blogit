@@ -1,7 +1,7 @@
 import api from './axiosConfig';
-import { UserRegistrationDto, UserLoginDto, UserUpdateDto, UserResponseDto } from '@/types/user';
+import { UserRegistrationDto, UserLoginDto, UserUpdateDto, UserResponseDto, AuthResponse } from '../types/user';
 
-const BASE_PATH = import.meta.env.VITE_USER_SERVICE_PATH || '/api/users';
+const BASE_PATH = import.meta.env.VITE_USER_SERVICE_PATH || '/api/v1/users';
 
 export const userService = {
   // Authentication
@@ -9,7 +9,7 @@ export const userService = {
     api.post<UserResponseDto>(`${BASE_PATH}/register`, data),
 
   login: (data: UserLoginDto) =>
-    api.post<UserResponseDto>(`${BASE_PATH}/login`, data),
+    api.post<AuthResponse>(`${BASE_PATH}/login`, data),
 
   logout: () =>
     api.post(`${BASE_PATH}/logout`),
@@ -67,4 +67,4 @@ export const userService = {
   // Privacy Settings
   togglePrivateProfile: () =>
     api.put(`${BASE_PATH}/me/privacy`),
-}; 
+};
