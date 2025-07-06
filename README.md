@@ -1,27 +1,150 @@
-# Blogit - Microservices Social Media Platform
+# Blogit - Microservices Blog Platform
 
-A scalable, cloud-native social media platform built with microservices architecture, similar to Twitter.
+A modern blog platform built with microservices architecture, focusing on scalability, resilience, and event-driven design.
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
-This project implements a microservices architecture with the following services:
+```mermaid
+graph TD
+    Client[Client/Frontend] --> NGINX[NGINX API Gateway]
+    
+    subgraph Services
+        NGINX --> US[User Service]
+        NGINX --> PS[Post Service]
+        NGINX --> IS[Interaction Service]
+        
+        US --> UDB[(User DB)]
+        PS --> PDB[(Post DB)]
+        IS --> IDB[(Interaction DB)]
+        
+        US --> |Publish/Subscribe| Kafka[Kafka Event Bus]
+        PS --> |Publish/Subscribe| Kafka
+        IS --> |Publish/Subscribe| Kafka
+    end
+    
+    subgraph Caching & Rate Limiting
+        NGINX --> Redis[(Redis)]
+    end
+    
+    subgraph Monitoring
+        Services --> Prometheus[Prometheus]
+        Services --> Tempo[Tempo Tracing]
+        Services --> Loki[Loki Logs]
+    end
+```
 
-- **API Gateway Service** - Entry point, authentication, rate limiting
-- **User Service** - User management, profiles, relationships
-- **Post Service** - Post creation, editing, content management
-- **Interaction Service** - Likes, comments, engagement
-- **Notification Service** - Real-time notifications
-- **Media Service** - Image upload, processing, CDN
-- **Feed Service** - Timeline generation, personalized feeds
+## Service Communication
 
-## 🚀 Technology Stack
+### 1. Synchronous Communication (REST)
+- NGINX handles routing and load balancing
+- Circuit breakers protect services from cascading failures
+- Redis for rate limiting and caching
 
-- **Backend**: Spring Boot 3.2+, Java 17+
-- **Database**: PostgreSQL (per service), Redis (caching)
-- **Message Queue**: Apache Kafka
-- **Containerization**: Docker & Docker Compose
-- **Security**: JWT, OAuth 2.0, Spring Security
-- **Monitoring**: Actuator, Micrometer, Zipkin
+### 2. Asynchronous Communication (Events)
+- Kafka for event-driven communication
+- Standardized event format across services
+- Topics:
+  - user-events: User-related events (registration, profile updates)
+  - post-events: Post lifecycle events (creation, updates, deletion)
+  - interaction-events: Likes, comments, and other interactions
+
+### 3. Circuit Breaker Pattern
+- Implemented using Resilience4j
+- Protects services from:
+  - Slow responses
+  - Failed requests
+  - Resource exhaustion
+
+## Services
+
+### User Service (Port: 8081)
+- User management and authentication
+- Profile management
+- Following/Follower relationships
+
+### Post Service (Port: 8082)
+- Blog post CRUD operations
+- Post categorization and tagging
+- Draft management
+
+### Interaction Service (Port: 8083)
+- Likes and reactions
+- Comments and replies
+- User engagement metrics
+
+## Event Types
+
+### User Events
+- USER_REGISTERED
+- PROFILE_UPDATED
+- FOLLOW_CREATED
+- FOLLOW_REMOVED
+
+### Post Events
+- POST_CREATED
+- POST_UPDATED
+- POST_DELETED
+- POST_PUBLISHED
+
+### Interaction Events
+- COMMENT_CREATED
+- COMMENT_UPDATED
+- COMMENT_DELETED
+- LIKE_ADDED
+- LIKE_REMOVED
+
+## Getting Started
+
+1. Prerequisites:
+   - Docker and Docker Compose
+   - Java 17+
+   - Maven
+
+2. Build and Run:
+   ```bash
+   cd blogit
+   docker-compose up -d
+   ```
+
+3. Access Services:
+   - API Gateway: http://localhost:8080
+   - Swagger UI: http://localhost:8080/swagger-ui.html
+   - Prometheus: http://localhost:9090
+   - Grafana: http://localhost:3000
+
+## Development
+
+### Adding New Events
+1. Create event class extending BaseEvent
+2. Define event data class
+3. Implement publisher in source service
+4. Implement consumer in target service(s)
+
+### Circuit Breaker Usage
+```java
+@CircuitBreaker(name = "userService")
+public UserResponse getUser(String userId) {
+    // Service call
+}
+```
+
+### Kafka Producer Example
+```java
+@Autowired
+private KafkaTemplate<String, DomainEvent<?>> kafkaTemplate;
+
+public void publishEvent(DomainEvent<?> event) {
+    kafkaTemplate.send(TOPIC_NAME, event);
+}
+```
+
+### Kafka Consumer Example
+```java
+@KafkaListener(topics = "user-events")
+public void handleUserEvent(DomainEvent<?> event) {
+    // Handle event
+}
+```
 
 ## 📋 Prerequisites
 
