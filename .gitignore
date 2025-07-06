@@ -41,3 +41,17 @@ target/
 
 ### VS Code ###
 .vscode/
+
+# Frontend (React/Vite/Node)
+blogit-frontend/node_modules/
+blogit-frontend/.env
+blogit-frontend/.env.*
+blogit-frontend/dist/
+blogit-frontend/build/
+blogit-frontend/.next/
+blogit-frontend/.cache/
+blogit-frontend/.turbo/
+blogit-frontend/yarn.lock
+blogit-frontend/package-lock.json
+blogit-frontend/npm-debug.log*
+blogit-frontend/.eslintcache

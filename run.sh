@@ -133,7 +133,7 @@ clean_environment() {
 # Function to check if Docker is running
 check_docker() {
     if ! docker info > /dev/null 2>&1; then
-        print_status $RED "❌ Docker is not running. Please start Docker and try again."
+        echo "Docker is not running. Please start Docker and try again."
         exit 1
     fi
 }
@@ -210,6 +210,61 @@ show_service_status() {
     echo "  🔄 Restart service: docker-compose restart [service-name]"
     echo "  🛑 Stop all:        docker-compose down"
     echo ""
+}
+
+# Function to build and install common module
+build_common() {
+    echo "Building common module..."
+    cd common
+    mvn clean install -DskipTests
+    cd ..
+}
+
+# Function to build services
+build_services() {
+    echo "Building services..."
+    services=("user-service" "post-service" "interaction-service")
+    
+    for service in "${services[@]}"; do
+        echo "Building $service..."
+        cd $service
+        mvn clean package -DskipTests
+        cd ..
+    done
+}
+
+# Function to start services
+start_services() {
+    echo "Starting services..."
+    docker-compose up -d --build
+}
+
+# Function to check service health
+check_health() {
+    echo "Checking service health..."
+    services=("user-service:8081" "post-service:8082" "interaction-service:8083")
+    
+    for service in "${services[@]}"; do
+        IFS=':' read -r name port <<< "$service"
+        echo "Checking $name..."
+        
+        # Wait for service to be healthy
+        timeout=60
+        while [ $timeout -gt 0 ]; do
+            if curl -f http://localhost:$port/actuator/health > /dev/null 2>&1; then
+                echo "$name is healthy"
+                break
+            fi
+            echo "Waiting for $name to be healthy..."
+            sleep 5
+            timeout=$((timeout-5))
+        done
+        
+        if [ $timeout -eq 0 ]; then
+            echo "Timeout waiting for $name to be healthy"
+            exit 1
+        fi
+    done
 }
 
 # Parse command line arguments
@@ -303,6 +358,22 @@ main() {
     
     print_status $GREEN "🎉 All services started successfully!"
     show_service_status
+
+    # Build and start services
+    build_common
+    build_services
+    start_services
+
+    # Check health
+    check_health
+
+    echo "All services are up and running!"
+    echo "Access the services at:"
+    echo "- User Service: http://localhost:8081"
+    echo "- Post Service: http://localhost:8082"
+    echo "- Interaction Service: http://localhost:8083"
+    echo "- Grafana: http://localhost:3000"
+    echo "- Prometheus: http://localhost:9090"
 }
 
 # Run main function
