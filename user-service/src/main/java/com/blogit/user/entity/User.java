@@ -1,216 +1,109 @@
 package com.blogit.user.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
 @Entity
 @Table(name = "users")
-@EntityListeners(AuditingEntityListener.class)
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
-    
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @NotBlank(message = "Username is required")
-    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+
     @Column(unique = true, nullable = false)
     private String username;
-    
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
+
     @Column(unique = true, nullable = false)
     private String email;
-    
-    @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters")
+
     @Column(nullable = false)
     private String password;
-    
-    @Size(max = 100, message = "First name must be less than 100 characters")
-    @Column(name = "first_name")
-    private String firstName;
-    
-    @Size(max = 100, message = "Last name must be less than 100 characters")
-    @Column(name = "last_name")
-    private String lastName;
-    
-    @Size(max = 500, message = "Bio must be less than 500 characters")
+
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
+
+    @Column(name = "profile_image")
+    private String profileImage;
+
+    @Column(name = "cover_image")
+    private String coverImage;
+
+    @Column(columnDefinition = "TEXT")
     private String bio;
-    
-    @Column(name = "profile_picture_url")
-    private String profilePictureUrl;
-    
-    @Column(name = "is_active")
-    private Boolean isActive = true;
-    
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-    
-    @LastModifiedDate
+
+    private String location;
+    private String website;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "is_verified", nullable = false)
+    private boolean isVerified;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
+
+    @Column(name = "is_private", nullable = false)
+    private boolean isPrivate;
+
+    @Column(name = "followers_count", nullable = false)
+    private int followersCount;
+
+    @Column(name = "following_count", nullable = false)
+    private int followingCount;
+
+    @Column(name = "posts_count", nullable = false)
+    private int postsCount;
+
+    @Column(name = "likes_count", nullable = false)
+    private int likesCount;
+
+    @Column(name = "last_active")
+    private LocalDateTime lastActive;
+
+    @CreationTimestamp
+    @Column(name = "joined_at", nullable = false, updatable = false)
+    private LocalDateTime joinedAt;
+
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    
-    @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<UserFollowing> following = new HashSet<>();
-    
-    @OneToMany(mappedBy = "following", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<UserFollowing> followers = new HashSet<>();
-    
-    // Constructors
-    public User() {}
-    
-    public User(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
-    
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public String getUsername() {
-        return username;
-    }
-    
-    public void setUsername(String username) {
-        this.username = username;
-    }
-    
-    public String getEmail() {
-        return email;
-    }
-    
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    
-    public String getPassword() {
-        return password;
-    }
-    
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    
-    public String getFirstName() {
-        return firstName;
-    }
-    
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-    
-    public String getLastName() {
-        return lastName;
-    }
-    
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-    
-    public String getBio() {
-        return bio;
-    }
-    
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-    
-    public String getProfilePictureUrl() {
-        return profilePictureUrl;
-    }
-    
-    public void setProfilePictureUrl(String profilePictureUrl) {
-        this.profilePictureUrl = profilePictureUrl;
-    }
-    
-    public Boolean getIsActive() {
-        return isActive;
-    }
-    
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
-    public Set<UserFollowing> getFollowing() {
-        return following;
-    }
-    
-    public void setFollowing(Set<UserFollowing> following) {
-        this.following = following;
-    }
-    
-    public Set<UserFollowing> getFollowers() {
-        return followers;
-    }
-    
-    public void setFollowers(Set<UserFollowing> followers) {
-        this.followers = followers;
-    }
-    
-    // Helper methods
-    public String getFullName() {
-        if (firstName != null && lastName != null) {
-            return firstName + " " + lastName;
-        } else if (firstName != null) {
-            return firstName;
-        } else if (lastName != null) {
-            return lastName;
+
+    @ElementCollection
+    @CollectionTable(name = "user_preferences", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "preference_key")
+    @Column(name = "preference_value")
+    private Map<String, String> preferences;
+
+    @PrePersist
+    protected void onCreate() {
+        if (isActive == false) {
+            isActive = true;
         }
-        return username;
-    }
-    
-    public int getFollowersCount() {
-        return followers.size();
-    }
-    
-    public int getFollowingCount() {
-        return following.size();
-    }
-    
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", isActive=" + isActive +
-                ", createdAt=" + createdAt +
-                '}';
+        if (followersCount == 0) {
+            followersCount = 0;
+        }
+        if (followingCount == 0) {
+            followingCount = 0;
+        }
+        if (postsCount == 0) {
+            postsCount = 0;
+        }
+        if (likesCount == 0) {
+            likesCount = 0;
+        }
     }
 }

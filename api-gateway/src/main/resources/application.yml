@@ -103,10 +103,7 @@ app:
     secret: mySecretKey
 
 logging:
-  config: classpath:logback-spring.xml
   level:
     com.blogit.gateway: DEBUG
     org.springframework.cloud.gateway: INFO
-  pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 

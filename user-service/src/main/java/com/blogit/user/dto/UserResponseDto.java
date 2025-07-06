@@ -2,19 +2,22 @@ package com.blogit.user.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "User response data")
 public class UserResponseDto {
     
-    @Schema(description = "User ID", example = "1")
-    private Long id;
+    @Schema(description = "User's unique identifier")
+    private String id;
     
     @Schema(description = "Username", example = "john_doe")
     private String username;
@@ -22,30 +25,51 @@ public class UserResponseDto {
     @Schema(description = "Email address", example = "john@example.com")
     private String email;
     
-    @Schema(description = "First name", example = "John")
-    private String firstName;
+    @Schema(description = "Full name", example = "John Doe")
+    private String fullName;
     
-    @Schema(description = "Last name", example = "Doe")
-    private String lastName;
+    @Schema(description = "Profile image URL")
+    private String profileImage;
     
-    @Schema(description = "User bio", example = "Software developer and tech enthusiast")
+    @Schema(description = "Cover image URL")
+    private String coverImage;
+    
+    @Schema(description = "User's bio", example = "Software developer and tech enthusiast")
     private String bio;
     
-    @Schema(description = "Profile picture URL", example = "https://example.com/profile.jpg")
-    private String profilePictureUrl;
+    @Schema(description = "User's location", example = "San Francisco, CA")
+    private String location;
     
-    @Schema(description = "Is account active", example = "true")
-    private Boolean isActive;
+    @Schema(description = "User's website", example = "https://johndoe.dev")
+    private String website;
     
-    @Schema(description = "Account creation date", example = "2024-01-01T00:00:00")
-    private LocalDateTime createdAt;
+    @Schema(description = "Date of birth")
+    private LocalDate dateOfBirth;
     
-    @Schema(description = "Last updated date", example = "2024-01-01T00:00:00")
-    private LocalDateTime updatedAt;
+    @Schema(description = "Whether the user is verified")
+    private boolean isVerified;
     
-    @Schema(description = "Number of followers", example = "100")
-    private Long followersCount;
+    @Schema(description = "Whether the user is active")
+    private boolean isActive;
     
-    @Schema(description = "Number of following", example = "50")
-    private Long followingCount;
+    @Schema(description = "Whether the user's profile is private")
+    private boolean isPrivate;
+    
+    @Schema(description = "Number of followers")
+    private int followersCount;
+    
+    @Schema(description = "Number of users being followed")
+    private int followingCount;
+    
+    @Schema(description = "Number of posts")
+    private int postsCount;
+    
+    @Schema(description = "Number of likes received")
+    private int likesCount;
+    
+    @Schema(description = "Last active timestamp")
+    private LocalDateTime lastActive;
+    
+    @Schema(description = "Account creation timestamp")
+    private LocalDateTime joinedAt;
 }

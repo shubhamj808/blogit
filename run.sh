@@ -25,7 +25,7 @@ CLEAN_ALL=false
 SHOW_HELP=false
 
 # Service arrays
-INFRASTRUCTURE_SERVICES=("postgres" "redis" "kafka" "alloy" "loki" "tempo" "prometheus" "grafana")
+INFRASTRUCTURE_SERVICES=("postgres" "redis" "kafka" "kafka-ui" "alloy" "loki" "tempo" "prometheus" "grafana")
 APPLICATION_SERVICES=("api-gateway" "user-service" "post-service" "interaction-service")
 ALL_SERVICES=("${INFRASTRUCTURE_SERVICES[@]}" "${APPLICATION_SERVICES[@]}")
 

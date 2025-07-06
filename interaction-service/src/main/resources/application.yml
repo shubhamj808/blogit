@@ -63,15 +63,12 @@ management:
       probability: 1.0
 
 logging:
-  config: classpath:logback-spring.xml
   level:
     com.blogit.interaction: DEBUG
     org.springframework.security: DEBUG
     org.springframework.kafka: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-  pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
 # Application specific properties
 app:

@@ -67,10 +67,7 @@ app:
     secret: mySecretKey
 
 logging:
-  config: classpath:logback-spring.xml
   level:
     com.blogit.post: DEBUG
     org.springframework.kafka: INFO
-  pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 

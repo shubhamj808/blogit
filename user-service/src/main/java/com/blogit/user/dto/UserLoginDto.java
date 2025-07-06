@@ -13,10 +13,12 @@ import lombok.NoArgsConstructor;
 public class UserLoginDto {
     
     @NotBlank(message = "Username or email is required")
-    @Schema(description = "Username or email of the user", example = "john_doe or john@example.com")
+    @Schema(description = "Username or email of the user", example = "john_doe")
     private String usernameOrEmail;
     
     @NotBlank(message = "Password is required")
     @Schema(description = "Password for the user", example = "SecurePassword123!")
     private String password;
+
+    private boolean rememberMe;
 }

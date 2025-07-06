@@ -1,0 +1,94 @@
+### Variables
+@baseUrl = http://localhost:8081/api/v1
+@email = test@example.com
+@password = Test123!
+@authToken = {{login.response.body.data.token}}
+
+### Register a new user
+# @name register
+POST {{baseUrl}}/users/register
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "email": "{{email}}",
+    "password": "{{password}}",
+    "fullName": "Test User",
+    "bio": "Test bio",
+    "location": "Test location",
+    "website": "https://test.com"
+}
+
+### Login
+# @name login
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+    "email": "{{email}}",
+    "password": "{{password}}"
+}
+
+### Get current user profile
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+
+### Update user profile
+PATCH {{baseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "fullName": "Updated Test User",
+    "bio": "Updated bio",
+    "location": "Updated location",
+    "website": "https://updated-test.com"
+}
+
+### Search users
+GET {{baseUrl}}/users/search?query=test
+Authorization: Bearer {{authToken}}
+
+### Get user by ID
+GET {{baseUrl}}/users/{{register.response.body.data.id}}
+Authorization: Bearer {{authToken}}
+
+### Follow a user
+POST {{baseUrl}}/users/{{register.response.body.data.id}}/follow
+Authorization: Bearer {{authToken}}
+
+### Unfollow a user
+DELETE {{baseUrl}}/users/{{register.response.body.data.id}}/follow
+Authorization: Bearer {{authToken}}
+
+### Get user followers
+GET {{baseUrl}}/users/{{register.response.body.data.id}}/followers
+Authorization: Bearer {{authToken}}
+
+### Get user following
+GET {{baseUrl}}/users/{{register.response.body.data.id}}/following
+Authorization: Bearer {{authToken}}
+
+### Request password reset
+POST {{baseUrl}}/users/password/reset-request
+Content-Type: application/json
+
+{
+    "email": "{{email}}"
+}
+
+### Reset password
+POST {{baseUrl}}/users/password/reset
+Content-Type: application/json
+
+{
+    "token": "reset-token-from-email",
+    "newPassword": "NewTest123!"
+}
+
+### Verify email
+GET {{baseUrl}}/users/verify-email?token=verification-token-from-email
+
+### Get user stats
+GET {{baseUrl}}/users/{{register.response.body.data.id}}/stats
+Authorization: Bearer {{authToken}} 

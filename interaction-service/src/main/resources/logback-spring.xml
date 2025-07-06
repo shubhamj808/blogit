@@ -14,16 +14,15 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>
-                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
-            </pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <appender name="OpenTelemetry"
-        class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
-        <captureExperimentalAttributes>false</captureExperimentalAttributes>
+
+    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+        <captureExperimentalAttributes>true</captureExperimentalAttributes>
         <captureCodeAttributes>true</captureCodeAttributes>
         <captureMarkerAttribute>true</captureMarkerAttribute>
         <captureKeyValuePairAttributes>true</captureKeyValuePairAttributes>
@@ -34,5 +33,9 @@
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
+        <appender-ref ref="OTEL"/>
     </root>
+
+    <!-- Set OpenTelemetry SDK logging to WARN -->
+    <logger name="io.opentelemetry" level="WARN"/>
 </configuration>

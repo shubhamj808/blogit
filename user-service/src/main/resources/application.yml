@@ -1,5 +1,7 @@
 server:
   port: 8081
+  servlet:
+    context-path: /api/v1
 
 spring:
   application:
@@ -65,15 +67,22 @@ management:
 
 app:
   jwt:
-    secret: mySecretKey
-    expiration: 86400000
+    secret: ${JWT_SECRET:QXNrIHlvdXIgZG9jdG9yIGlmIEJsb2dpdCBpcyByaWdodCBmb3IgeW91}
+    expiration: ${JWT_EXPIRATION:86400000}
 
 logging:
-  config: classpath:logback-spring.xml
   level:
     com.blogit.user: DEBUG
     org.springframework.security: DEBUG
     org.springframework.kafka: INFO
-  pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: method
+  show-actuator: true
 
