@@ -1,7 +1,7 @@
 import api from './axiosConfig';
 import { CreatePostRequest, UpdatePostRequest, PostResponse } from '../types/post';
 
-const BASE_PATH = import.meta.env.VITE_POST_SERVICE_PATH || '/api/posts';
+const BASE_PATH = import.meta.env.VITE_POST_SERVICE_PATH || '/api/v1/posts';
 
 export const postService = {
   // Post CRUD Operations

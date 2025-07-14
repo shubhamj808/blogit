@@ -1,5 +1,7 @@
 server:
   port: 8083
+  servlet:
+    context-path: /api/v1
 
 spring:
   application:
@@ -97,13 +99,13 @@ otel:
 
 logging:
   level:
-    com.blogit.interaction: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.kafka: DEBUG
-    org.apache.kafka: DEBUG
-    org.hibernate.SQL: DEBUG
+    com.blogit.interaction: INFO
+    org.springframework.security: INFO
+    org.springframework.kafka: INFO
+    org.apache.kafka: INFO
+    org.hibernate.SQL: INFO
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    io.opentelemetry: DEBUG
+    io.opentelemetry: INFO
 
 # Application specific properties
 app:

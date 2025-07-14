@@ -1,5 +1,7 @@
 server:
   port: 8082
+  servlet:
+    context-path: /api/v1
 
 spring:
   mvc:
@@ -57,8 +59,8 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.blogit.common.event,com.blogit.post"
-        spring.json.type.mapping: UserRegisteredEvent:com.blogit.common.event.user.UserRegisteredEvent,UserUpdatedEvent:com.blogit.common.event.user.UserUpdatedEvent
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.blogit.common.event.DomainEvent
 
 management:
   endpoints:
@@ -111,10 +113,10 @@ app:
 
 logging:
   level:
-    com.blogit.post: DEBUG
-    org.springframework.kafka: DEBUG
-    org.apache.kafka: DEBUG
-    org.hibernate.SQL: DEBUG
+    com.blogit.post: INFO
+    org.springframework.kafka: INFO
+    org.apache.kafka: INFO
+    org.hibernate.SQL: INFO
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    io.opentelemetry: DEBUG
+    io.opentelemetry: INFO
 

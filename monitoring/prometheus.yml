@@ -27,13 +27,13 @@ scrape_configs:
       - targets: ['user-service:8081']
 
   - job_name: 'post-service'
-    metrics_path: '/actuator/prometheus'
+    metrics_path: '/api/v1/actuator/prometheus'
     scrape_interval: 15s
     static_configs:
       - targets: ['post-service:8082']
 
   - job_name: 'interaction-service'
-    metrics_path: '/actuator/prometheus'
+    metrics_path: '/api/v1/actuator/prometheus'
     scrape_interval: 15s
     static_configs:
       - targets: ['interaction-service:8083']

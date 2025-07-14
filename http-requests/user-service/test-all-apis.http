@@ -3,6 +3,11 @@
 @email = test@example.com
 @password = Test123!
 @authToken = {{login.response.body.data.token}}
+@userId = {{register.response.body.data.id}}
+
+###############################################
+# AUTHENTICATION
+###############################################
 
 ### Register a new user
 # @name register
@@ -30,6 +35,14 @@ Content-Type: application/json
     "password": "{{password}}"
 }
 
+### Logout
+POST {{baseUrl}}/users/logout
+Authorization: Bearer {{authToken}}
+
+###############################################
+# USER PROFILE
+###############################################
+
 ### Get current user profile
 GET {{baseUrl}}/users/me
 Authorization: Bearer {{authToken}}
@@ -43,32 +56,41 @@ Content-Type: application/json
     "fullName": "Updated Test User",
     "bio": "Updated bio",
     "location": "Updated location",
-    "website": "https://updated-test.com"
+    "website": "https://updated-test.com",
+    "avatarUrl": "https://example.com/avatar.jpg"
 }
 
-### Search users
-GET {{baseUrl}}/users/search?query=test
+### Get user by ID
+GET {{baseUrl}}/users/{{userId}}
 Authorization: Bearer {{authToken}}
 
-### Get user by ID
-GET {{baseUrl}}/users/{{register.response.body.data.id}}
+### Search users
+GET {{baseUrl}}/users/search?query=test&page=0&size=10
 Authorization: Bearer {{authToken}}
+
+###############################################
+# FOLLOWING
+###############################################
 
 ### Follow a user
-POST {{baseUrl}}/users/{{register.response.body.data.id}}/follow
+POST {{baseUrl}}/users/{{userId}}/follow
 Authorization: Bearer {{authToken}}
 
 ### Unfollow a user
-DELETE {{baseUrl}}/users/{{register.response.body.data.id}}/follow
+DELETE {{baseUrl}}/users/{{userId}}/follow
 Authorization: Bearer {{authToken}}
 
 ### Get user followers
-GET {{baseUrl}}/users/{{register.response.body.data.id}}/followers
+GET {{baseUrl}}/users/{{userId}}/followers?page=0&size=10
 Authorization: Bearer {{authToken}}
 
 ### Get user following
-GET {{baseUrl}}/users/{{register.response.body.data.id}}/following
+GET {{baseUrl}}/users/{{userId}}/following?page=0&size=10
 Authorization: Bearer {{authToken}}
+
+###############################################
+# PASSWORD MANAGEMENT
+###############################################
 
 ### Request password reset
 POST {{baseUrl}}/users/password/reset-request
@@ -87,9 +109,44 @@ Content-Type: application/json
     "newPassword": "NewTest123!"
 }
 
+### Change password
+POST {{baseUrl}}/users/password/change
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "currentPassword": "{{password}}",
+    "newPassword": "NewTest123!"
+}
+
+###############################################
+# EMAIL VERIFICATION
+###############################################
+
 ### Verify email
 GET {{baseUrl}}/users/verify-email?token=verification-token-from-email
 
+### Resend verification email
+POST {{baseUrl}}/users/verify-email/resend
+Authorization: Bearer {{authToken}}
+
+###############################################
+# USER STATISTICS
+###############################################
+
 ### Get user stats
-GET {{baseUrl}}/users/{{register.response.body.data.id}}/stats
-Authorization: Bearer {{authToken}} 
+GET {{baseUrl}}/users/{{userId}}/stats
+Authorization: Bearer {{authToken}}
+
+###############################################
+# MONITORING
+###############################################
+
+### Health Check
+GET {{baseUrl}}/actuator/health
+
+### Metrics
+GET {{baseUrl}}/actuator/metrics
+
+### OpenAPI Documentation
+GET {{baseUrl}}/v3/api-docs 
