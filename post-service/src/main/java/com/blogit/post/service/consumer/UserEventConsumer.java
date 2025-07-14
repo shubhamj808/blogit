@@ -21,17 +21,39 @@ public class UserEventConsumer {
     public void handleUserEvent(DomainEvent<?> event) {
         log.info("Received user event: {}", event.getEventType());
         
-        switch (event.getEventType()) {
+        // Add null safety check for eventType
+        if (event == null) {
+            log.error("Received null event");
+            return;
+        }
+        
+        String eventType = event.getEventType();
+        if (eventType == null) {
+            log.error("Received event with null eventType: {}", event);
+            return;
+        }
+        
+        switch (eventType) {
             case UserRegisteredEvent.EVENT_TYPE:
                 handleUserRegistered((UserRegisteredEvent) event);
                 break;
             default:
-                log.warn("Unhandled user event type: {}", event.getEventType());
+                log.warn("Unhandled user event type: {}", eventType);
         }
     }
     
     private void handleUserRegistered(UserRegisteredEvent event) {
+        if (event == null) {
+            log.error("Received null UserRegisteredEvent");
+            return;
+        }
+        
         var userData = event.getData();
+        if (userData == null) {
+            log.error("Received UserRegisteredEvent with null data: {}", event);
+            return;
+        }
+        
         log.info("User registered: {}", userData.getUserId());
         // Here you can add any post-service specific logic for new users
         // For example, creating default posts, setting up user preferences, etc.
