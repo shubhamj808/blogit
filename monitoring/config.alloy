@@ -210,7 +210,7 @@ loki.write "default" {
 // Tempo Exporter Configuration
 otelcol.exporter.otlp "tempo" {
   client {
-    endpoint = "tempo:4317"
+    endpoint = "http://tempo:4317"
     tls {
       insecure = true
     }
