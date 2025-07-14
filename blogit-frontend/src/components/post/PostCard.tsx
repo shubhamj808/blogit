@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../redux/hooks';
+import { useAppSelector } from '../../redux/hooks';
 import { PostResponse } from '../../types/post';
 import { formatDistanceToNow } from 'date-fns';
 import { interactionService } from '../../api/interactionService';
+import { useNotification } from '../../components/common/Notifications';
 
 interface PostCardProps {
   post: PostResponse;
@@ -15,6 +16,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onLikeUpdate }) => {
   const [isLiked, setIsLiked] = useState(post.isLiked || false);
   const [likeCount, setLikeCount] = useState(post.likesCount || 0);
   const [isLoading, setIsLoading] = useState(false);
+  const { showNotification } = useNotification();
 
   const handleLikeClick = async () => {
     if (!isAuthenticated || isLoading) return;
@@ -30,8 +32,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, onLikeUpdate }) => {
       }
       setIsLiked(!isLiked);
       onLikeUpdate?.(post.id, !isLiked);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling like:', error);
+      setIsLiked(isLiked); // Revert the optimistic update
+      setLikeCount(post.likesCount || 0);
+      showNotification({
+        type: 'error',
+        message: error.message || 'Failed to update like status. Please try again.'
+      });
     } finally {
       setIsLoading(false);
     }

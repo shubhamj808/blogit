@@ -2,6 +2,13 @@ server:
   port: 8082
 
 spring:
+  mvc:
+    format:
+      date: iso
+      date-time: iso
+      time: iso
+    converters:
+      preferred-json-mapper: jackson
   data:
     redis:
       host: redis
@@ -23,25 +30,35 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: none
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
   
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    
   kafka:
     bootstrap-servers: kafka:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        spring.json.type.mapping: UserRegisteredEvent:com.blogit.common.event.user.UserRegisteredEvent,UserUpdatedEvent:com.blogit.common.event.user.UserUpdatedEvent
     consumer:
       group-id: post-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.blogit.post.*"
+        spring.json.trusted.packages: "com.blogit.common.event,com.blogit.post"
+        spring.json.type.mapping: UserRegisteredEvent:com.blogit.common.event.user.UserRegisteredEvent,UserUpdatedEvent:com.blogit.common.event.user.UserUpdatedEvent
 
 management:
   endpoints:
@@ -55,12 +72,38 @@ management:
     export:
       prometheus:
         enabled: true
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+    tags:
+      application: ${spring.application.name}
   tracing:
     sampling:
       probability: 1.0
-  otlp:
-    tracing:
-      endpoint: http://alloy:4318/v1/traces
+    enabled: true
+    propagation:
+      type: w3c
+    baggage:
+      enabled: true
+    otel:
+      exporter:
+        otlp:
+          endpoint: http://alloy:4317
+
+otel:
+  exporter:
+    otlp:
+      endpoint: http://alloy:4317
+  service:
+    name: ${spring.application.name}
+  traces:
+    exporter: otlp
+  metrics:
+    exporter: otlp
+  logs:
+    exporter: otlp
 
 app:
   jwt:
@@ -69,5 +112,9 @@ app:
 logging:
   level:
     com.blogit.post: DEBUG
-    org.springframework.kafka: INFO
+    org.springframework.kafka: DEBUG
+    org.apache.kafka: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    io.opentelemetry: DEBUG
 

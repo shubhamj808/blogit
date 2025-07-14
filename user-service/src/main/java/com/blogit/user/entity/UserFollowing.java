@@ -10,34 +10,26 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user_following",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"follower_id", "following_id"}))
+@Table(name = "user_following")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserFollowing {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
-
-    @Column(name = "follower_id", nullable = false)
-    private String followerId;
-
-    @Column(name = "following_id", nullable = false)
-    private String followingId;
+    @EmbeddedId
+    private UserFollowingId id;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private FollowStatus status = FollowStatus.ACTIVE;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("followerId")
+    @JoinColumn(name = "follower_id")
+    private User follower;
 
-    public enum FollowStatus {
-        ACTIVE,
-        BLOCKED
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("followingId")
+    @JoinColumn(name = "following_id")
+    private User following;
 }

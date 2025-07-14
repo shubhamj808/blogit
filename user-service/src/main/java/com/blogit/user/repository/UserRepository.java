@@ -10,9 +10,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, String> {
+public interface UserRepository extends JpaRepository<User, UUID> {
     
     Optional<User> findByUsername(String username);
     
@@ -37,12 +38,12 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("SELECT u FROM User u WHERE " +
            "u.id != :userId AND " +
            "u.isActive = true AND " +
-           "u.id NOT IN (SELECT uf.followingId FROM UserFollowing uf WHERE uf.followerId = :userId) " +
+           "u.id NOT IN (SELECT uf.id.followingId FROM UserFollowing uf WHERE uf.id.followerId = :userId) " +
            "ORDER BY u.followersCount DESC")
-    Page<User> findSuggestedUsers(@Param("userId") String userId, Pageable pageable);
+    Page<User> findSuggestedUsers(@Param("userId") UUID userId, Pageable pageable);
     
     @Query("SELECT u FROM User u WHERE u.id IN :userIds")
-    List<User> findByUserIds(@Param("userIds") List<String> userIds);
+    List<User> findByUserIds(@Param("userIds") List<UUID> userIds);
     
     @Query("SELECT u FROM User u WHERE u.isVerified = :verified")
     Page<User> findByVerified(@Param("verified") boolean verified, Pageable pageable);
@@ -57,11 +58,11 @@ public interface UserRepository extends JpaRepository<User, String> {
            "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :query, '%'))")
     List<User> searchUsers(@Param("query") String query);
     
-    @Query("SELECT u FROM User u WHERE u.isActive = true ORDER BY u.joinedAt DESC")
-    Page<User> findActiveUsers(Pageable pageable);
+    // Use method name instead of @Query to avoid validation issues
+    Page<User> findByIsActiveTrueOrderByJoinedAtDesc(Pageable pageable);
     
-    @Query("SELECT u FROM User u WHERE u.isActive = true ORDER BY u.joinedAt DESC")
-    List<User> findActiveUsers();
+    // Use method name instead of @Query to avoid validation issues
+    List<User> findByIsActiveTrueOrderByJoinedAtDesc();
     
     @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true")
     Long countActiveUsers();

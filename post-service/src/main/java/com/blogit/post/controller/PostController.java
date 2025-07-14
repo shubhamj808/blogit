@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
@@ -17,30 +19,30 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public PostResponse createPost(@RequestHeader("X-User-Id") Long userId, @Valid @RequestBody CreatePostRequest request) {
+    public PostResponse createPost(@RequestHeader("X-User-Id") UUID userId, @Valid @RequestBody CreatePostRequest request) {
         return postService.createPost(userId, request);
     }
     
     @GetMapping("/{postId}")
-    public PostResponse getPost(@PathVariable Long postId) {
+    public PostResponse getPost(@PathVariable UUID postId) {
         return postService.getPost(postId);
     }
     
     @GetMapping
-    public Page<PostResponse> getUserPosts(@RequestHeader("X-User-Id") Long userId, 
+    public Page<PostResponse> getUserPosts(@RequestHeader("X-User-Id") UUID userId, 
                                            @RequestParam(defaultValue = "0") int page, 
                                            @RequestParam(defaultValue = "10") int size) {
         return postService.getUserPosts(userId, page, size);
     }
     
     @PutMapping("/{postId}")
-    public PostResponse updatePost(@PathVariable Long postId, @RequestHeader("X-User-Id") Long userId, 
+    public PostResponse updatePost(@PathVariable UUID postId, @RequestHeader("X-User-Id") UUID userId, 
                                    @Valid @RequestBody UpdatePostRequest request) {
         return postService.updatePost(postId, userId, request);
     }
 
     @DeleteMapping("/{postId}")
-    public void deletePost(@PathVariable Long postId, @RequestHeader("X-User-Id") Long userId) {
+    public void deletePost(@PathVariable UUID postId, @RequestHeader("X-User-Id") UUID userId) {
         postService.deletePost(postId, userId);
     }
 }

@@ -1,36 +1,20 @@
-# Multi-stage build
-FROM maven:3.9.10-eclipse-temurin-21 AS builder
-
-WORKDIR /app
-
-# Copy pom.xml and download dependencies
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
-
-# Copy source code and build
-COPY src ./src
-RUN mvn clean package -DskipTests
-
-# Runtime image
 FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
-# Create non-root user and logs directory
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Create spring user
 RUN addgroup --system spring && adduser --system spring --ingroup spring
+
+# Create logs directory and set permissions
 RUN mkdir -p /app/logs && chown -R spring:spring /app/logs
 
-USER spring:spring
+# Copy pre-built jar
+COPY target/*.jar app.jar
 
-# Copy the built jar
-COPY --from=builder /app/target/*.jar app.jar
+# Use spring user
+USER spring
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:8081/actuator/health || exit 1
-
-# Expose port
-EXPOSE 8081
-
-# Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]

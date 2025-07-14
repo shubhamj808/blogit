@@ -2,12 +2,21 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../redux/hooks';
 import { logout } from '../../redux/slices/authSlice';
-import { FiMenu, FiX } from 'react-icons/fi';
+import { 
+  FiMenu, 
+  FiX, 
+  FiHome, 
+  FiUser, 
+  FiPlusCircle, 
+  FiLogIn, 
+  FiLogOut,
+  FiUserPlus
+} from 'react-icons/fi';
 
 const navLinks = [
-  { to: '/feed', label: 'Feed', auth: true },
-  { to: '/create', label: 'Create Post', auth: true },
-  { to: '/profile', label: 'Profile', auth: true },
+  { to: '/feed', label: 'Feed', auth: true, icon: FiHome },
+  { to: '/create', label: 'Create Post', auth: true, icon: FiPlusCircle },
+  { to: '/profile', label: 'Profile', auth: true, icon: FiUser },
 ];
 
 const Navbar: React.FC = () => {
@@ -25,59 +34,91 @@ const Navbar: React.FC = () => {
     setIsOpen(!isOpen);
   };
 
+  const isActive = (path: string) => location.pathname === path;
+
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50 font-sans">
+    <nav className="bg-sky-900 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
+          {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors duration-200">Blogit</Link>
+            <Link 
+              to="/" 
+              className="flex items-center space-x-2 text-2xl font-bold text-white hover:text-sky-200 transition-colors duration-200"
+            >
+              <span className="text-3xl">📝</span>
+              <span>Blogit</span>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <div className="flex space-x-4">
-              <Link
-                to="/"
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${location.pathname === '/'
-                  ? 'bg-indigo-100 text-indigo-700 shadow-sm'
-                  : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 hover:shadow-sm'
-                }`}
-                onClick={() => setIsOpen(false)}
-              >
-                Home
-              </Link>
-              {navLinks.map(link => {
-                if (link.auth && !isAuthenticated) return null;
-                return (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${location.pathname === link.to
-                      ? 'bg-indigo-100 text-indigo-700 shadow-sm'
-                      : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 hover:shadow-sm'
-                    }`}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </div>
-            <div className="flex items-center space-x-4 ml-4">
+          <div className="hidden md:flex items-center space-x-6">
+            {/* Home Link */}
+            <Link
+              to="/"
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                isActive('/')
+                  ? 'bg-sky-800 text-white shadow-md'
+                  : 'text-sky-100 hover:bg-sky-800 hover:text-white'
+              }`}
+              onClick={() => setIsOpen(false)}
+            >
+              <FiHome size={18} />
+              <span>Home</span>
+            </Link>
+
+            {/* Authenticated Links */}
+            {isAuthenticated && navLinks.map(link => {
+              const IconComponent = link.icon;
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                    isActive(link.to)
+                      ? 'bg-sky-800 text-white shadow-md'
+                      : 'text-sky-100 hover:bg-sky-800 hover:text-white'
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <IconComponent size={18} />
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
+
+            {/* Auth Section */}
+            <div className="flex items-center space-x-3 ml-6 pl-6 border-l border-sky-700">
               {isAuthenticated ? (
                 <>
-                  <span className="text-sm text-gray-700 font-medium">{user?.username}</span>
+                  <div className="flex items-center space-x-2 text-sky-100">
+                    <FiUser size={16} />
+                    <span className="text-sm font-medium">{user?.username}</span>
+                  </div>
                   <button
                     onClick={handleLogout}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200"
+                    className="flex items-center space-x-2 px-4 py-2 text-sm font-semibold text-sky-100 hover:text-white hover:bg-sky-800 rounded-lg transition-all duration-200"
                   >
-                    Logout
+                    <FiLogOut size={16} />
+                    <span>Logout</span>
                   </button>
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200">Login</Link>
-                  <Link to="/register" className="px-4 py-2 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200">Register</Link>
+                  <Link 
+                    to="/login" 
+                    className="flex items-center space-x-2 px-4 py-2 text-sm font-semibold text-sky-100 hover:text-white hover:bg-sky-800 rounded-lg transition-all duration-200"
+                  >
+                    <FiLogIn size={16} />
+                    <span>Login</span>
+                  </Link>
+                  <Link 
+                    to="/register" 
+                    className="flex items-center space-x-2 px-4 py-2 text-sm font-semibold text-sky-900 bg-white hover:bg-sky-50 rounded-lg transition-all duration-200 shadow-md"
+                  >
+                    <FiUserPlus size={16} />
+                    <span>Register</span>
+                  </Link>
                 </>
               )}
             </div>
@@ -87,69 +128,84 @@ const Navbar: React.FC = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 transition-colors duration-200"
+              className="inline-flex items-center justify-center p-2 rounded-lg text-sky-100 hover:text-white hover:bg-sky-800 transition-all duration-200"
             >
-              {isOpen ? <FiX size={24} color="#4B5563" /> : <FiMenu size={24} color="#4B5563" />}
+              {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
             </button>
           </div>
         </div>
 
         {/* Mobile Navigation Menu */}
         {isOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="md:hidden bg-sky-800 rounded-lg mt-2 shadow-xl">
+            <div className="px-4 py-3 space-y-2">
+              {/* Home Link */}
               <Link
                 to="/"
-                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${location.pathname === '/'
-                  ? 'bg-indigo-100 text-indigo-700'
-                  : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'
+                className={`flex items-center space-x-3 px-3 py-3 rounded-lg text-base font-semibold transition-all duration-200 ${
+                  isActive('/')
+                    ? 'bg-sky-700 text-white'
+                    : 'text-sky-100 hover:bg-sky-700 hover:text-white'
                 }`}
                 onClick={() => setIsOpen(false)}
               >
-                Home
+                <FiHome size={20} />
+                <span>Home</span>
               </Link>
-              {navLinks.map(link => {
-                if (link.auth && !isAuthenticated) return null;
+
+              {/* Authenticated Links */}
+              {isAuthenticated && navLinks.map(link => {
+                const IconComponent = link.icon;
                 return (
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${location.pathname === link.to
-                      ? 'bg-indigo-100 text-indigo-700'
-                      : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'
+                    className={`flex items-center space-x-3 px-3 py-3 rounded-lg text-base font-semibold transition-all duration-200 ${
+                      isActive(link.to)
+                        ? 'bg-sky-700 text-white'
+                        : 'text-sky-100 hover:bg-sky-700 hover:text-white'
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
-                    {link.label}
+                    <IconComponent size={20} />
+                    <span>{link.label}</span>
                   </Link>
                 );
               })}
-              <div className="pt-4 pb-3 border-t border-gray-200">
+
+              {/* Auth Section */}
+              <div className="pt-4 pb-2 border-t border-sky-600">
                 {isAuthenticated ? (
                   <>
-                    <div className="px-3 py-2 text-base font-medium text-gray-700">{user?.username}</div>
+                    <div className="flex items-center space-x-3 px-3 py-3 text-base font-semibold text-sky-100">
+                      <FiUser size={20} />
+                      <span>{user?.username}</span>
+                    </div>
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-md transition-colors duration-200"
+                      className="flex items-center space-x-3 w-full text-left px-3 py-3 text-base font-semibold text-sky-100 hover:bg-sky-700 hover:text-white rounded-lg transition-all duration-200"
                     >
-                      Logout
+                      <FiLogOut size={20} />
+                      <span>Logout</span>
                     </button>
                   </>
                 ) : (
                   <>
                     <Link
                       to="/login"
-                      className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-md transition-colors duration-200"
+                      className="flex items-center space-x-3 px-3 py-3 text-base font-semibold text-sky-100 hover:bg-sky-700 hover:text-white rounded-lg transition-all duration-200"
                       onClick={() => setIsOpen(false)}
                     >
-                      Login
+                      <FiLogIn size={20} />
+                      <span>Login</span>
                     </Link>
                     <Link
                       to="/register"
-                      className="block px-3 py-2 mt-1 text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors duration-200"
+                      className="flex items-center space-x-3 px-3 py-3 mt-2 text-base font-semibold text-sky-900 bg-white hover:bg-sky-50 rounded-lg transition-all duration-200"
                       onClick={() => setIsOpen(false)}
                     >
-                      Register
+                      <FiUserPlus size={20} />
+                      <span>Register</span>
                     </Link>
                   </>
                 )}

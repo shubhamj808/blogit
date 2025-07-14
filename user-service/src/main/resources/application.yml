@@ -18,13 +18,20 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: create
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
   
+  flyway:
+    enabled: false
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    clean-on-validation-error: true
+    validate-on-migrate: true
+    
   data:
     redis:
       host: redis
@@ -38,32 +45,65 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        spring.json.type.mapping: com.blogit.common.event.*
     consumer:
       group-id: user-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.blogit.user.*"
+        spring.json.trusted.packages: "com.blogit.common.event,com.blogit.user"
+        spring.json.type.mapping: com.blogit.common.event.*
 
 management:
   endpoints:
     web:
+      base-path: /actuator
       exposure:
         include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: always
-  metrics:
-    export:
-      prometheus:
-        enabled: true
   tracing:
     sampling:
       probability: 1.0
-  otlp:
-    tracing:
-      endpoint: http://alloy:4318/v1/traces
+    enabled: true
+    propagation:
+      type: w3c
+    baggage:
+      enabled: true
+    otel:
+      exporter:
+        otlp:
+          endpoint: http://alloy:4317
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+    tags:
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+otel:
+  exporter:
+    otlp:
+      endpoint: http://alloy:4317
+  service:
+    name: ${spring.application.name}
+  traces:
+    exporter: otlp
+  metrics:
+    exporter: otlp
+  logs:
+    exporter: otlp
 
 app:
   jwt:
@@ -74,7 +114,10 @@ logging:
   level:
     com.blogit.user: DEBUG
     org.springframework.security: DEBUG
-    org.springframework.kafka: INFO
+    org.springframework.kafka: DEBUG
+    org.apache.kafka: DEBUG
+    org.flywaydb: DEBUG
+    io.opentelemetry: DEBUG
 
 springdoc:
   api-docs:
@@ -85,4 +128,3 @@ springdoc:
     tags-sorter: alpha
     operations-sorter: method
   show-actuator: true
-

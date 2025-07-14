@@ -33,19 +33,22 @@ spring:
         enabled: false
   
   kafka:
-    bootstrap-servers: kafka:29092
+    bootstrap-servers: kafka:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
       retries: 3
+      properties:
+        spring.json.type.mapping: PostCreatedEvent:com.blogit.common.event.post.PostCreatedEvent,PostUpdatedEvent:com.blogit.common.event.post.PostUpdatedEvent,PostDeletedEvent:com.blogit.common.event.post.PostDeletedEvent
     consumer:
       group-id: interaction-service-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.blogit.interaction.event"
+        spring.json.trusted.packages: "com.blogit.common.event,com.blogit.interaction"
+        spring.json.type.mapping: PostCreatedEvent:com.blogit.common.event.post.PostCreatedEvent,PostUpdatedEvent:com.blogit.common.event.post.PostUpdatedEvent,PostDeletedEvent:com.blogit.common.event.post.PostDeletedEvent
 
 management:
   endpoints:
@@ -55,20 +58,52 @@ management:
   endpoint:
     health:
       show-details: always
-  otlp:
-    tracing:
-      endpoint: http://alloy:4318/v1/traces
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
   tracing:
     sampling:
       probability: 1.0
+    enabled: true
+    propagation:
+      type: w3c
+    baggage:
+      enabled: true
+    otel:
+      exporter:
+        otlp:
+          endpoint: http://alloy:4317
+
+otel:
+  exporter:
+    otlp:
+      endpoint: http://alloy:4317
+  service:
+    name: ${spring.application.name}
+  traces:
+    exporter: otlp
+  metrics:
+    exporter: otlp
+  logs:
+    exporter: otlp
 
 logging:
   level:
     com.blogit.interaction: DEBUG
     org.springframework.security: DEBUG
-    org.springframework.kafka: INFO
+    org.springframework.kafka: DEBUG
+    org.apache.kafka: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    io.opentelemetry: DEBUG
 
 # Application specific properties
 app:

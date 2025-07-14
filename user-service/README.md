@@ -156,40 +156,41 @@ curl -X GET "http://localhost:8081/api/users/search?query=john" \
 
 ## Database Schema
 
-### Users Table
-```sql
-CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    first_name VARCHAR(50) NOT NULL,
-    last_name VARCHAR(50) NOT NULL,
-    bio TEXT,
-    avatar_url VARCHAR(255),
-    location VARCHAR(100),
-    website VARCHAR(255),
-    date_of_birth DATE,
-    is_active BOOLEAN DEFAULT TRUE,
-    is_verified BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    version BIGINT DEFAULT 0
-);
+```mermaid
+erDiagram
+    User {
+        UUID id PK
+        String email
+        String username
+        String password
+        String bio
+        String profilePicture
+        DateTime createdAt
+        DateTime updatedAt
+    }
+    UserFollowing {
+        UUID followerId FK
+        UUID followingId FK
+        DateTime createdAt
+    }
+    User ||--o{ UserFollowing : "has_followers"
+    User ||--o{ UserFollowing : "is_following"
 ```
 
-### User Relationships Table
-```sql
-CREATE TABLE user_relationships (
-    id BIGSERIAL PRIMARY KEY,
-    follower_id BIGINT NOT NULL,
-    following_id BIGINT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (follower_id) REFERENCES users(id),
-    FOREIGN KEY (following_id) REFERENCES users(id),
-    UNIQUE(follower_id, following_id)
-);
-```
+### Table Relationships
+
+1. **User - UserFollowing** (Many-to-Many through UserFollowing)
+   - A User can follow many other Users (through UserFollowing.followingId)
+   - A User can have many followers (through UserFollowing.followerId)
+   - The UserFollowing table serves as a junction table to establish these relationships
+   - Both followerId and followingId reference the User table's id column
+
+### Key Features
+- Each User has a unique UUID as primary key
+- Email and username are unique constraints
+- Passwords are stored in encrypted format
+- Timestamps (createdAt, updatedAt) are automatically managed
+- The UserFollowing table tracks follower relationships with creation timestamp
 
 ## Monitoring and Health Checks
 

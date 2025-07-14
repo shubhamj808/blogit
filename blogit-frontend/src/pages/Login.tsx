@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { login } from '../redux/slices/authSlice';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { UserLoginDto } from '../types/user';
+import { FiMail, FiLock, FiUser } from 'react-icons/fi';
 
 const loginSchema = Yup.object().shape({
   usernameOrEmail: Yup.string().required('Username or email is required'),
@@ -31,52 +32,67 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-sky-100 mb-4">
+            <FiUser className="h-6 w-6 text-sky-600" />
+          </div>
+          <h2 className="text-3xl font-bold text-slate-900">Sign in to your account</h2>
+          <p className="mt-2 text-sm text-slate-600">
             Or{' '}
-            <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link to="/register" className="font-semibold text-sky-600 hover:text-sky-500 transition-colors">
               create a new account
             </Link>
           </p>
         </div>
+        
         <Formik
           initialValues={{ usernameOrEmail: '', password: '', rememberMe: false }}
           validationSchema={loginSchema}
           onSubmit={handleSubmit}
         >
           {({ isSubmitting }) => (
-            <Form className="mt-8 space-y-6">
-              <div className="rounded-md shadow-sm -space-y-px">
+            <Form className="space-y-6">
+              <div className="space-y-4">
                 <div>
-                  <label htmlFor="usernameOrEmail" className="sr-only">
+                  <label htmlFor="usernameOrEmail" className="form-label">
                     Username or Email
                   </label>
-                  <Field
-                    id="usernameOrEmail"
-                    name="usernameOrEmail"
-                    type="text"
-                    autoComplete="username"
-                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                    placeholder="Username or Email"
-                  />
-                  <ErrorMessage name="usernameOrEmail" component="div" className="text-red-500 text-xs mt-1" />
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiMail className="h-5 w-5 text-slate-400" />
+                    </div>
+                    <Field
+                      id="usernameOrEmail"
+                      name="usernameOrEmail"
+                      type="text"
+                      autoComplete="username"
+                      className="input-field pl-10"
+                      placeholder="Enter your username or email"
+                    />
+                  </div>
+                  <ErrorMessage name="usernameOrEmail" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
+                
                 <div>
-                  <label htmlFor="password" className="sr-only">
+                  <label htmlFor="password" className="form-label">
                     Password
                   </label>
-                  <Field
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                    placeholder="Password"
-                  />
-                  <ErrorMessage name="password" component="div" className="text-red-500 text-xs mt-1" />
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiLock className="h-5 w-5 text-slate-400" />
+                    </div>
+                    <Field
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="current-password"
+                      className="input-field pl-10"
+                      placeholder="Enter your password"
+                    />
+                  </div>
+                  <ErrorMessage name="password" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
               </div>
 
@@ -86,43 +102,43 @@ const Login: React.FC = () => {
                     id="rememberMe"
                     name="rememberMe"
                     type="checkbox"
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-slate-300 rounded"
                   />
-                  <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-900">
+                  <label htmlFor="rememberMe" className="ml-2 block text-sm text-slate-700">
                     Remember me
                   </label>
                 </div>
 
                 <div className="text-sm">
-                  <Link to="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
+                  <Link to="/forgot-password" className="font-semibold text-sky-600 hover:text-sky-500 transition-colors">
                     Forgot your password?
                   </Link>
                 </div>
               </div>
 
-              {error && formSubmitted && <div className="text-red-500 text-sm text-center">{error}</div>}
+              {error && formSubmitted && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="text-red-600 text-sm text-center">{error}</div>
+                </div>
+              )}
 
               <div>
                 <button
                   type="submit"
                   disabled={isSubmitting || loading}
-                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="btn-primary w-full flex justify-center items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
-                    <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    </span>
+                    <>
+                      <div className="loading-spinner w-5 h-5"></div>
+                      <span>Signing in...</span>
+                    </>
                   ) : (
-                    <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                      <svg className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                      </svg>
-                    </span>
+                    <>
+                      <FiLock className="h-5 w-5" />
+                      <span>Sign in</span>
+                    </>
                   )}
-                  Sign in
                 </button>
               </div>
             </Form>

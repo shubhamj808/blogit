@@ -14,9 +14,10 @@ Content-Type: application/json
     "email": "{{email}}",
     "password": "{{password}}",
     "fullName": "Test User",
-    "bio": "Test bio",
-    "location": "Test location",
-    "website": "https://test.com"
+    "firstName": "Test",
+    "lastName": "User",
+    "dateOfBirth": "1990-01-01",
+    "acceptTerms": true
 }
 
 ### Login

@@ -6,6 +6,7 @@ const timeout = Number(import.meta.env.VITE_API_TIMEOUT) || 5000;
 const api = axios.create({
   baseURL,
   timeout,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -27,19 +28,42 @@ api.interceptors.request.use(
 
 // Response interceptor
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    // Handle token expiration
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-      return Promise.reject(error);
+  response => response,
+  error => {
+    if (!error.response) {
+      // Network error
+      return Promise.reject({
+        message: 'Network error. Please check your connection.',
+        status: 'error'
+      });
     }
 
-    return Promise.reject(error);
+    // Handle specific error cases
+    const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred';
+    
+    switch (error.response?.status) {
+      case 401:
+        // Unauthorized - clear token and redirect to login
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        break;
+      case 403:
+        // Forbidden
+        return Promise.reject({
+          message: 'You do not have permission to perform this action',
+          status: 'error'
+        });
+      case 500:
+        return Promise.reject({
+          message: 'Server error. Please try again later.',
+          status: 'error'
+        });
+    }
+
+    return Promise.reject({
+      message: errorMessage,
+      status: 'error'
+    });
   }
 );
 

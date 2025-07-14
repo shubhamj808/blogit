@@ -147,41 +147,33 @@ curl -X DELETE http://localhost:8082/api/posts/1 \
 
 ## Database Schema
 
-### Posts Table
-```sql
-CREATE TABLE posts (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    title VARCHAR(500) NOT NULL,
-    content TEXT NOT NULL,
-    visibility VARCHAR(20) DEFAULT 'PUBLIC',
-    likes_count BIGINT DEFAULT 0,
-    comments_count BIGINT DEFAULT 0,
-    shares_count BIGINT DEFAULT 0,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    version BIGINT DEFAULT 0
-);
+```mermaid
+erDiagram
+    Post {
+        UUID id PK
+        UUID userId FK
+        String title
+        String content
+        String[] tags
+        DateTime createdAt
+        DateTime updatedAt
+    }
 ```
 
-### Post Hashtags Table
-```sql
-CREATE TABLE post_hashtags (
-    post_id BIGINT NOT NULL,
-    hashtag VARCHAR(100) NOT NULL,
-    FOREIGN KEY (post_id) REFERENCES posts(id)
-);
-```
+### Table Relationships
 
-### Post Media Table
-```sql
-CREATE TABLE post_media (
-    post_id BIGINT NOT NULL,
-    media_url VARCHAR(255) NOT NULL,
-    FOREIGN KEY (post_id) REFERENCES posts(id)
-);
-```
+1. **Post - User** (Many-to-One)
+   - Each Post belongs to one User (through userId foreign key)
+   - A User can have multiple Posts
+   - The userId field references the User table's id in the User Service
+
+### Key Features
+- Each Post has a unique UUID as primary key
+- Posts are associated with their author through userId
+- Content supports rich text formatting
+- Tags are stored as an array of strings for easy categorization
+- Timestamps (createdAt, updatedAt) are automatically managed
+- Soft deletion is supported to maintain data integrity with related interactions
 
 ## Post Visibility
 

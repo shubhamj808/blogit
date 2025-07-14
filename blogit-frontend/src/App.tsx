@@ -8,6 +8,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Feed from './pages/Feed';
+import CreatePost from './pages/CreatePost';
+import PostDetail from './pages/PostDetail';
+import EditPost from './pages/EditPost';
 
 // Protected route wrapper component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -40,7 +43,7 @@ const App: React.FC = () => {
             path="/create"
             element={
               <ProtectedRoute>
-                <div>Create Post Page (Coming Soon)</div>
+                <CreatePost />
               </ProtectedRoute>
             }
           />
@@ -58,12 +61,12 @@ const App: React.FC = () => {
           />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/post/:id" element={<div>Post Detail Page (Coming Soon)</div>} />
+          <Route path="/post/:id" element={<PostDetail />} />
           <Route
             path="/post/edit/:id"
             element={
               <ProtectedRoute>
-                <div>Edit Post Page (Coming Soon)</div>
+                <EditPost />
               </ProtectedRoute>
             }
           />

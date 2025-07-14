@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import org.springframework.transaction.annotation.Transactional;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,8 +26,9 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final EventPublishingService eventPublishingService;
 
-    public PostResponse createPost(Long userId, CreatePostRequest request) {
+    public PostResponse createPost(UUID userId, CreatePostRequest request) {
         Post post = Post.builder()
                 .userId(userId)
                 .title(request.getTitle())
@@ -36,54 +39,65 @@ public class PostService {
                 .build();
 
         post = postRepository.save(post);
+        
+        // Publish post created event
+        eventPublishingService.publishPostCreated(post);
 
         log.info("Post created: {}", post);
         return PostResponse.fromEntity(post);
     }
 
-    public PostResponse getPost(Long postId) {
+    public PostResponse getPost(UUID postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found."));
+
+        if (!post.getIsActive()) {
+            log.info("Post {} is not active", postId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found.");
+        }
 
         return PostResponse.fromEntity(post);
     }
 
-    public Page<PostResponse> getUserPosts(Long userId, int page, int size) {
+    public Page<PostResponse> getUserPosts(UUID userId, int page, int size) {
         return postRepository.findByUserIdAndIsActiveOrderByCreatedAtDesc(userId, true, PageRequest.of(page, size))
                 .map(PostResponse::fromEntity);
     }
 
-    public PostResponse updatePost(Long postId, Long userId, UpdatePostRequest request) {
-        Post post = postRepository.findByIdAndIsActive(postId, true)
+    public PostResponse updatePost(UUID postId, UUID userId, UpdatePostRequest request) {
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found."));
 
         if (!post.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to update this post.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not authorized to update this post.");
         }
 
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
-        post.setVisibility(request.getVisibility());
         post.setHashtags(request.getHashtags());
         post.setMediaUrls(request.getMediaUrls());
+        post.setVisibility(request.getVisibility());
 
         post = postRepository.save(post);
+        
+        // Publish post updated event
+        eventPublishingService.publishPostUpdated(post);
 
-        log.info("Post updated: {}", post);
         return PostResponse.fromEntity(post);
     }
 
-    public void deletePost(Long postId, Long userId) {
-        Post post = postRepository.findByIdAndIsActive(postId, true)
+    public void deletePost(UUID postId, UUID userId) {
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found."));
 
         if (!post.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this post.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not authorized to delete this post.");
         }
 
         post.setIsActive(false);
-        postRepository.save(post);
-
-        log.info("Post deleted: {}", post);
+        post = postRepository.save(post);
+        
+        // Publish post deleted event
+        eventPublishingService.publishPostDeleted(post);
     }
 }

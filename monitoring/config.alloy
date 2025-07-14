@@ -1,3 +1,161 @@
+// File matching for user-service logs
+local.file_match "user_service_logs" {
+  path_targets = [{"__path__" = "/host/logs/user-service/*.log"},{"__path__" = "/host/logs/user-service/**/*.log"}]
+  sync_period = "5s"
+}
+
+// File matching for post-service logs
+local.file_match "post_service_logs" {
+  path_targets = [{"__path__" = "/host/logs/post-service/*.log"},{"__path__" = "/host/logs/post-service/**/*.log"}]
+  sync_period = "5s"
+}
+
+// File matching for interaction-service logs
+local.file_match "interaction_service_logs" {
+  path_targets = [{"__path__" = "/host/logs/interaction-service/*.log"},{"__path__" = "/host/logs/interaction-service/**/*.log"}]
+  sync_period = "5s"
+}
+
+// Log scraping for user-service
+loki.source.file "user_service_scrape" {
+  targets = local.file_match.user_service_logs.targets
+  forward_to = [loki.process.user_service_logs.receiver]
+  tail_from_end = true
+}
+
+// Log scraping for post-service
+loki.source.file "post_service_scrape" {
+  targets = local.file_match.post_service_logs.targets
+  forward_to = [loki.process.post_service_logs.receiver]
+  tail_from_end = true
+}
+
+// Log scraping for interaction-service
+loki.source.file "interaction_service_scrape" {
+  targets = local.file_match.interaction_service_logs.targets
+  forward_to = [loki.process.interaction_service_logs.receiver]
+  tail_from_end = true
+}
+
+// Processing for user-service logs
+loki.process "user_service_logs" {
+  // Add static labels for user-service
+  stage.static_labels {
+    values = {
+      job = "user-service",
+      service_name = "user-service",
+      environment = "development",
+      application = "blogit",
+      component = "user-management",
+    }
+  }
+
+  // Extract log level from Spring Boot logs
+  stage.regex {
+    expression = "(?P<timestamp>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+(?P<level>\\w+)\\s+(?P<pid>\\d+)\\s+---\\s+\\[(?P<thread>[^\\]]+)\\]\\s+(?P<logger>[^\\s]+)\\s+:\\s+(?P<message>.*)"
+  }
+
+  // Add extracted fields as labels
+  stage.labels {
+    values = {
+      level = null,
+      thread = null,
+    }
+  }
+
+  // Optional: Filter out noisy logs
+  stage.drop {
+    expression = ".*DEBUG.*"
+    drop_counter_reason = "debug_noise"
+  }
+
+  forward_to = [loki.write.loki_endpoint.receiver]
+}
+
+// Processing for post-service logs
+loki.process "post_service_logs" {
+  // Add static labels for post-service
+  stage.static_labels {
+    values = {
+      job = "post-service",
+      service_name = "post-service",
+      environment = "development",
+      application = "blogit",
+      component = "post-management",
+    }
+  }
+
+  // Extract log level from Spring Boot logs
+  stage.regex {
+    expression = "(?P<timestamp>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+(?P<level>\\w+)\\s+(?P<pid>\\d+)\\s+---\\s+\\[(?P<thread>[^\\]]+)\\]\\s+(?P<logger>[^\\s]+)\\s+:\\s+(?P<message>.*)"
+  }
+
+  // Add extracted fields as labels
+  stage.labels {
+    values = {
+      level = null,
+      thread = null,
+    }
+  }
+
+  // Optional: Filter out noisy logs
+  stage.drop {
+    expression = ".*DEBUG.*"
+    drop_counter_reason = "debug_noise"
+  }
+
+  forward_to = [loki.write.loki_endpoint.receiver]
+}
+
+// Processing for interaction-service logs
+loki.process "interaction_service_logs" {
+  // Add static labels for interaction-service
+  stage.static_labels {
+    values = {
+      job = "interaction-service",
+      service_name = "interaction-service",
+      environment = "development",
+      application = "blogit",
+      component = "interaction-interaction",
+    }
+  }
+
+  // Extract log level from Spring Boot logs
+  stage.regex {
+    expression = "(?P<timestamp>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+(?P<level>\\w+)\\s+(?P<pid>\\d+)\\s+---\\s+\\[(?P<thread>[^\\]]+)\\]\\s+(?P<logger>[^\\s]+)\\s+:\\s+(?P<message>.*)"
+  }
+
+  // Add extracted fields as labels
+  stage.labels {
+    values = {
+      level = null,
+      thread = null,
+    }
+  }
+
+  // Optional: Filter out noisy logs
+  stage.drop {
+    expression = ".*DEBUG.*"
+    drop_counter_reason = "debug_noise"
+  }
+
+  forward_to = [loki.write.loki_endpoint.receiver]
+}
+
+// Write component - sends logs to Loki
+loki.write "loki_endpoint" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+  
+  // Optional: Set external labels for the entire stream
+  external_labels = {
+    cluster = "local-docker",
+    namespace = "blogit",
+  }
+}
+
+// OTLP Receiver Configuration
 otelcol.receiver.otlp "default" {
   grpc {
     endpoint = "0.0.0.0:4317"
@@ -14,7 +172,11 @@ otelcol.receiver.otlp "default" {
   }
 }
 
+// Batch Processor Configuration
 otelcol.processor.batch "default" {
+  timeout = "5s"
+  send_batch_size = 1024
+
   output {
     metrics = [otelcol.exporter.prometheus.default.input]
     logs    = [otelcol.exporter.loki.default.input]
@@ -22,6 +184,7 @@ otelcol.processor.batch "default" {
   }
 }
 
+// Prometheus Exporter Configuration
 otelcol.exporter.prometheus "default" {
   forward_to = [prometheus.remote_write.default.receiver]
 }
@@ -32,24 +195,30 @@ prometheus.remote_write "default" {
   }
 }
 
+// Loki Exporter Configuration
 otelcol.exporter.loki "default" {
   forward_to = [loki.write.default.receiver]
 }
 
-// Loki exporter
+// Loki Writer Configuration
 loki.write "default" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
   }
 }
 
-
-// Tempo exporter
+// Tempo Exporter Configuration
 otelcol.exporter.otlp "tempo" {
   client {
-      endpoint = "tempo:4317"
-      tls {
-         insecure = true
-      }
+    endpoint = "tempo:4317"
+    tls {
+      insecure = true
+    }
+  }
+  retry_on_failure {
+    enabled = true
+    initial_interval = "5s"
+    max_interval = "30s"
+    max_elapsed_time = "300s"
   }
 }

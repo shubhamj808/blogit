@@ -1,7 +1,7 @@
 import api from './axiosConfig';
 import { CreateCommentRequest, UpdateCommentRequest, CommentDto, LikeDto } from '../types/interaction';
 
-const BASE_PATH = import.meta.env.VITE_INTERACTION_SERVICE_PATH || '/api/interactions';
+const BASE_PATH = import.meta.env.VITE_INTERACTION_SERVICE_PATH || '/api/v1/interactions';
 
 export const interactionService = {
   // Comment Operations

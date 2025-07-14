@@ -3,9 +3,11 @@ package com.blogit.user.service.impl;
 import com.blogit.user.dto.*;
 import com.blogit.user.entity.User;
 import com.blogit.user.entity.UserFollowing;
+import com.blogit.user.entity.UserFollowingId;
 import com.blogit.user.repository.UserFollowingRepository;
 import com.blogit.user.repository.UserRepository;
 import com.blogit.user.security.JwtTokenProvider;
+import com.blogit.user.service.EventPublishingService;
 import com.blogit.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final UserFollowingRepository followingRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EventPublishingService eventPublishingService;
 
     @Override
     public UserResponseDto register(UserRegistrationDto registrationDto) {
@@ -52,6 +56,10 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         user = userRepository.save(user);
+        
+        // Publish user registered event
+        eventPublishingService.publishUserRegistered(user);
+        
         return mapUserToResponseDto(user);
     }
 
@@ -69,7 +77,7 @@ public class UserServiceImpl implements UserService {
         user = userRepository.save(user);
 
         // Generate JWT token
-        String token = jwtTokenProvider.generateToken(user.getId(), user.getUsername());
+        String token = jwtTokenProvider.generateToken(user.getId().toString(), user.getUsername());
         
         // Create response with user details and token
         UserResponseDto userResponse = mapUserToResponseDto(user);
@@ -83,7 +91,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto getUserById(String userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return mapUserToResponseDto(user);
     }
@@ -97,7 +105,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto updateProfile(String userId, UserUpdateDto updateDto) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (updateDto.getEmail() != null && !updateDto.getEmail().equals(user.getEmail())) {
@@ -119,12 +127,22 @@ public class UserServiceImpl implements UserService {
         if (updateDto.getIsPrivate() != null) user.setPrivate(updateDto.getIsPrivate());
 
         user = userRepository.save(user);
+        
+        // Publish user updated event
+        eventPublishingService.publishUserUpdated(user);
+        
         return mapUserToResponseDto(user);
     }
 
     @Override
     public void deleteAccount(String userId) {
-        userRepository.deleteById(userId);
+        User user = userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setActive(false);
+        user = userRepository.save(user);
+        
+        // Publish user updated event for deactivation
+        eventPublishingService.publishUserUpdated(user);
     }
 
     @Override
@@ -133,18 +151,22 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Users cannot follow themselves");
         }
 
-        User follower = userRepository.findById(followerId)
+        UUID followerUuid = UUID.fromString(followerId);
+        UUID followingUuid = UUID.fromString(followingId);
+
+        User follower = userRepository.findById(followerUuid)
                 .orElseThrow(() -> new RuntimeException("Follower not found"));
-        User following = userRepository.findById(followingId)
+        User following = userRepository.findById(followingUuid)
                 .orElseThrow(() -> new RuntimeException("User to follow not found"));
 
-        if (followingRepository.existsByFollowerIdAndFollowingId(followerId, followingId)) {
+        if (followingRepository.existsByFollowerIdAndFollowingId(followerUuid, followingUuid)) {
             throw new RuntimeException("Already following this user");
         }
 
         UserFollowing userFollowing = UserFollowing.builder()
-                .followerId(followerId)
-                .followingId(followingId)
+                .id(new UserFollowingId(followerUuid, followingUuid))
+                .follower(follower)
+                .following(following)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -153,34 +175,40 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void unfollowUser(String followerId, String followingId) {
-        if (!followingRepository.existsByFollowerIdAndFollowingId(followerId, followingId)) {
+        UUID followerUuid = UUID.fromString(followerId);
+        UUID followingUuid = UUID.fromString(followingId);
+
+        if (!followingRepository.existsByFollowerIdAndFollowingId(followerUuid, followingUuid)) {
             throw new RuntimeException("Not following this user");
         }
 
-        followingRepository.deleteByFollowerIdAndFollowingId(followerId, followingId);
+        followingRepository.deleteByFollowerIdAndFollowingId(followerUuid, followingUuid);
     }
 
     @Override
     public Page<UserResponseDto> getFollowers(String userId, Pageable pageable) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return followingRepository.findFollowersByFollowingId(userId, pageable)
+        return followingRepository.findFollowersByFollowingId(UUID.fromString(userId), pageable)
                 .map(this::mapUserToResponseDto);
     }
 
     @Override
     public Page<UserResponseDto> getFollowing(String userId, Pageable pageable) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return followingRepository.findFollowingByFollowerId(userId, pageable)
+        return followingRepository.findFollowingByFollowerId(UUID.fromString(userId), pageable)
                 .map(this::mapUserToResponseDto);
     }
 
     @Override
     public boolean isFollowing(String followerId, String followingId) {
-        return followingRepository.existsByFollowerIdAndFollowingId(followerId, followingId);
+        return followingRepository.existsByFollowerIdAndFollowingId(
+            UUID.fromString(followerId), 
+            UUID.fromString(followingId)
+        );
     }
 
     @Override
@@ -212,7 +240,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updatePassword(String userId, String oldPassword, String newPassword) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
@@ -225,7 +253,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateEmail(String userId, String newEmail) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (userRepository.existsByEmail(newEmail)) {
@@ -239,7 +267,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateLastActive(String userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setLastActive(LocalDateTime.now());
         userRepository.save(user);
@@ -247,7 +275,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void togglePrivateProfile(String userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setPrivate(!user.isPrivate());
         userRepository.save(user);
@@ -255,7 +283,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void toggleAccountStatus(String userId, boolean active) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setActive(active);
         userRepository.save(user);
@@ -263,7 +291,7 @@ public class UserServiceImpl implements UserService {
 
     private UserResponseDto mapUserToResponseDto(User user) {
         return UserResponseDto.builder()
-                .id(user.getId())
+                .id(user.getId().toString())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
@@ -276,8 +304,10 @@ public class UserServiceImpl implements UserService {
                 .isVerified(user.isVerified())
                 .isActive(user.isActive())
                 .isPrivate(user.isPrivate())
-                .followersCount((int) followingRepository.countFollowersByFollowingId(user.getId()))
-                .followingCount((int) followingRepository.countFollowingByFollowerId(user.getId()))
+                .followersCount(user.getFollowersCount())
+                .followingCount(user.getFollowingCount())
+                .postsCount(user.getPostsCount())
+                .likesCount(user.getLikesCount())
                 .lastActive(user.getLastActive())
                 .joinedAt(user.getJoinedAt())
                 .build();

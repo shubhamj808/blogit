@@ -11,18 +11,19 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface PostRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, UUID> {
     
-    List<Post> findByUserIdAndIsActiveOrderByCreatedAtDesc(Long userId, Boolean isActive);
+    List<Post> findByUserIdAndIsActiveOrderByCreatedAtDesc(UUID userId, Boolean isActive);
     
-    Page<Post> findByUserIdAndIsActiveOrderByCreatedAtDesc(Long userId, Boolean isActive, Pageable pageable);
+    Page<Post> findByUserIdAndIsActiveOrderByCreatedAtDesc(UUID userId, Boolean isActive, Pageable pageable);
     
     Page<Post> findByVisibilityAndIsActiveOrderByCreatedAtDesc(Post.PostVisibility visibility, Boolean isActive, Pageable pageable);
     
     @Query("SELECT p FROM Post p WHERE p.visibility = 'PUBLIC' AND p.isActive = true AND p.userId IN :userIds ORDER BY p.createdAt DESC")
-    Page<Post> findPublicPostsByUserIds(@Param("userIds") List<Long> userIds, Pageable pageable);
+    Page<Post> findPublicPostsByUserIds(@Param("userIds") List<UUID> userIds, Pageable pageable);
     
     @Query("SELECT p FROM Post p WHERE p.isActive = true AND p.content ILIKE %:keyword% OR p.title ILIKE %:keyword% ORDER BY p.createdAt DESC")
     Page<Post> findByContentOrTitleContainingIgnoreCase(@Param("keyword") String keyword, Pageable pageable);
@@ -33,9 +34,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.isActive = true AND p.createdAt BETWEEN :startDate AND :endDate ORDER BY p.likesCount DESC, p.commentsCount DESC")
     Page<Post> findTrendingPosts(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, Pageable pageable);
     
-    Optional<Post> findByIdAndIsActive(Long id, Boolean isActive);
+    @Query("SELECT p FROM Post p WHERE p.id = :id AND p.isActive = :isActive")
+    Optional<Post> findByIdAndIsActive(@Param("id") UUID id, @Param("isActive") Boolean isActive);
     
-    Long countByUserIdAndIsActive(Long userId, Boolean isActive);
+    Long countByUserIdAndIsActive(UUID userId, Boolean isActive);
     
     @Query("SELECT DISTINCT h FROM Post p JOIN p.hashtags h WHERE p.isActive = true")
     List<String> findAllActiveHashtags();

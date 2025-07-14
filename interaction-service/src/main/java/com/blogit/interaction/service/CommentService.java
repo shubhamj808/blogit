@@ -113,6 +113,12 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void softDeletePostComments(UUID postId) {
+        // log.info("Soft deleting all comments for post: {}", postId); // Original code had this line commented out
+        commentRepository.softDeleteCommentsByPostId(postId);
+    }
+
     private CommentDto mapToCommentDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -15,8 +16,8 @@ import java.util.Set;
 @AllArgsConstructor
 public class PostResponse {
     
-    private Long id;
-    private Long userId;
+    private UUID id;
+    private UUID userId;
     private String title;
     private String content;
     private Post.PostVisibility visibility;

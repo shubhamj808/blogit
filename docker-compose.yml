@@ -1,7 +1,7 @@
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     container_name: blogit-postgres
     environment:
       POSTGRES_USER: blogit
@@ -15,10 +15,11 @@ services:
     networks:
       - blogit-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U blogit"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "pg_isready -U blogit -d blogit_user_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # Redis Cache
   redis:
@@ -38,26 +39,22 @@ services:
 
   # Apache Kafka (simplified setup)
   kafka:
-    image: bitnami/kafka:3.5
+    image: bitnami/kafka:4.0
     container_name: blogit-kafka
     ports:
-      - "9092:9092"
+      - "9094:9094"
     environment:
       # KRaft settings
-      KAFKA_CFG_NODE_ID: 0
-      KAFKA_CFG_PROCESS_ROLES: controller,broker
-      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CLUSTER_ID=kafka-kraft-cluster
       # Listeners
-      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      # Cluster
-      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
-      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
     volumes:
       - kafka_data:/bitnami/kafka
     networks:
@@ -69,23 +66,20 @@ services:
       retries: 5
       start_period: 20s
 
-  # Frontend Service
-  # frontend:
-  #   build:
-  #     context: ./blogit-frontend
-  #     dockerfile: Dockerfile
-  #   container_name: blogit-frontend
-  #   ports:
-  #     - "3000:80"
-  #   environment:
-  #     - REACT_APP_API_URL=http://localhost:8080
-  #   depends_on:
-  #     - nginx
-  #   networks:
-  #     - blogit-network
-  #   volumes:
-  #     - ./blogit-frontend/nginx.conf:/etc/nginx/nginx.conf:ro
-  #     - /app/node_modules
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: blogit-kafka-ui
+    ports:
+      - "8090:8080"
+    depends_on:
+      - kafka
+    environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
+      KAFKA_CLUSTERS_0_NAME: kafka-kraft-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    networks:
+      - blogit-network
+
 
   # NGINX for API Gateway
   nginx:
@@ -117,6 +111,7 @@ services:
       - "12345:12345" # UI
     volumes:
       - ./monitoring/config.alloy:/etc/alloy/config.alloy
+      - ./logs:/host/logs:ro
     command: run --server.http.listen-addr=0.0.0.0:12345 /etc/alloy/config.alloy
     networks:
       - blogit-network
@@ -125,7 +120,7 @@ services:
       - tempo
       
   loki:
-    image: grafana/loki:2.8.2
+    image: grafana/loki
     container_name: loki
     ports:
       - "3100:3100"
@@ -147,20 +142,6 @@ services:
     networks:
       - blogit-network
 
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: blogit-kafka-ui
-    depends_on:
-      - kafka
-    ports:
-      - "8090:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      KAFKA_CLUSTERS_0_SCHEMA_REGISTRY: ""
-    networks:
-      - blogit-network
-
   prometheus:
     image: prom/prometheus:v2.44.0
     container_name: prometheus
@@ -172,69 +153,152 @@ services:
       - blogit-network
 
   grafana:
-    image: grafana/grafana:9.5.2
+    image: grafana/grafana
     container_name: grafana
     depends_on:
       - prometheus
+      - loki
+      - tempo
     ports:
       - "3000:3000"
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./monitoring/datasources:/etc/grafana/provisioning/datasources
     networks:
       - blogit-network
 
   # Application Services
   user-service:
-    build: ./user-service
+    image: blogit/user-service
     container_name: user-service
     depends_on:
-      - kafka
-      - postgres
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/blogit_user_db
       SPRING_DATASOURCE_USERNAME: blogit
       SPRING_DATASOURCE_PASSWORD: blogit123
+      OTEL_SERVICE_NAME: "user-service"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "alloy:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+    labels:
+      - service=user-service
     ports:
       - "8081:8081"
     volumes:
       - ./logs/user-service:/app/logs
     networks:
       - blogit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/v1/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   post-service:
-    build: ./post-service
+    image: blogit/post-service
     container_name: post-service
     depends_on:
-      - kafka
-      - postgres
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/blogit_post_db
       SPRING_DATASOURCE_USERNAME: blogit
       SPRING_DATASOURCE_PASSWORD: blogit123
+      OTEL_SERVICE_NAME: "post-service"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "alloy:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+    labels:
+      - service=post-service
     ports:
       - "8082:8082"
     volumes:
       - ./logs/post-service:/app/logs
     networks:
       - blogit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   interaction-service:
-    build: ./interaction-service
+    image: blogit/interaction-service
     container_name: interaction-service
     depends_on:
-      - kafka
-      - postgres
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      post-service:
+        condition: service_healthy
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/blogit_interaction_db
       SPRING_DATASOURCE_USERNAME: blogit
       SPRING_DATASOURCE_PASSWORD: blogit123
+      OTEL_SERVICE_NAME: "interaction-service"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "alloy:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: otlp
+    labels:
+      - service=interaction-service
     ports:
       - "8083:8083"
     volumes:
       - ./logs/interaction-service:/app/logs
     networks:
       - blogit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Service
+  frontend:
+    image: blogit/frontend
+    container_name: blogit-frontend
+    build:
+      context: ./blogit-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    networks:
+      - blogit-network
+    depends_on:
+      - nginx
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
 
 networks:
   blogit-network:

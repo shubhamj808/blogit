@@ -1,7 +1,7 @@
 ### Create Post
 POST http://localhost:8082/api/posts
 Content-Type: application/json
-X-User-Id: 1
+X-User-Id: 123e4567-e89b-12d3-a456-426614174000
 
 {
   "title": "Sample Post",

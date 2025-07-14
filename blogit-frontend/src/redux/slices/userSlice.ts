@@ -207,9 +207,9 @@ const userSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
+      .addCase(fetchCurrentUser.fulfilled, (state) => {
         state.loading = false;
-        // We don't set selectedUser here as it's for viewing other profiles
+        state.error = null;
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.loading = false;
@@ -295,10 +295,17 @@ const userSlice = createSlice({
         state.error = action.payload as string;
       })
       // Toggle Private Profile
-      .addCase(togglePrivateProfile.fulfilled, (state, action) => {
-        if (state.selectedUser) {
-          state.selectedUser.isPrivate = !state.selectedUser.isPrivate;
-        }
+      .addCase(togglePrivateProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(togglePrivateProfile.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(togglePrivateProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

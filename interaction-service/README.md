@@ -38,6 +38,60 @@ Detailed API specifications will be documented using Swagger.
 ## Monitoring
 Integrated with OpenTelemetry for distributed tracing and monitoring.
 
+## Database Schema
+
+```mermaid
+erDiagram
+    Like {
+        UUID id PK
+        UUID userId FK
+        UUID postId FK
+        DateTime createdAt
+    }
+    Comment {
+        UUID id PK
+        UUID userId FK
+        UUID postId FK
+        String content
+        DateTime createdAt
+        DateTime updatedAt
+    }
+    CommentLike {
+        UUID id PK
+        UUID userId FK
+        UUID commentId FK
+        DateTime createdAt
+    }
+    Comment ||--o{ CommentLike : "has"
+    Like }o--|| Post : "belongs_to"
+    Comment }o--|| Post : "belongs_to"
+```
+
+### Table Relationships
+
+1. **Like - Post** (Many-to-One)
+   - Each Like belongs to one Post (through postId foreign key)
+   - Each Like is associated with one User (through userId foreign key)
+   - The postId references the Post table's id in the Post Service
+   - The userId references the User table's id in the User Service
+
+2. **Comment - Post** (Many-to-One)
+   - Each Comment belongs to one Post (through postId foreign key)
+   - Each Comment is associated with one User (through userId foreign key)
+   - Comments can be liked by users through the CommentLike table
+
+3. **CommentLike - Comment** (Many-to-One)
+   - Each CommentLike belongs to one Comment (through commentId foreign key)
+   - Each CommentLike is associated with one User (through userId foreign key)
+   - Tracks which users have liked which comments
+
+### Key Features
+- All tables use UUID as primary keys for distributed system compatibility
+- Foreign keys maintain referential integrity with User and Post services
+- Timestamps track creation and updates
+- Composite unique constraints prevent duplicate likes
+- Cascading deletes ensure data consistency
+
 ## Build Instructions
 1. Ensure Docker is running.
 2. Run `docker-compose up` to start required infrastructure components.
