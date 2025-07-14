@@ -1,0 +1,61 @@
+### Variables
+@baseUrl = http://localhost:8082/api/v1
+@userId = 123e4567-e89b-12d3-a456-426614174000
+@postId = 123e4567-e89b-12d3-a456-426614174001
+
+### Create Post
+# @name createPost
+POST {{baseUrl}}/posts
+Content-Type: application/json
+X-User-Id: {{userId}}
+
+{
+    "title": "Sample Post Title",
+    "content": "This is a sample post content with more details.",
+    "visibility": "PUBLIC",
+    "hashtags": ["tech", "programming"],
+    "mediaUrls": [
+        "https://example.com/image1.jpg",
+        "https://example.com/image2.jpg"
+    ]
+}
+
+### Get Post by ID
+GET {{baseUrl}}/posts/{{postId}}
+X-User-Id: {{userId}}
+
+### Get User Posts
+GET {{baseUrl}}/posts?page=0&size=10
+X-User-Id: {{userId}}
+
+### Get Feed
+GET {{baseUrl}}/posts/feed?page=0&size=10
+X-User-Id: {{userId}}
+
+### Update Post
+PUT {{baseUrl}}/posts/{{postId}}
+Content-Type: application/json
+X-User-Id: {{userId}}
+
+{
+    "title": "Updated Post Title",
+    "content": "This is the updated content of the post.",
+    "visibility": "FOLLOWERS_ONLY",
+    "hashtags": ["updated", "tech"],
+    "mediaUrls": [
+        "https://example.com/updated-image.jpg"
+    ]
+}
+
+### Delete Post
+DELETE {{baseUrl}}/posts/{{postId}}
+X-User-Id: {{userId}}
+
+### Health Check
+GET {{baseUrl}}/actuator/health
+
+### Metrics
+GET {{baseUrl}}/actuator/metrics
+
+### OpenAPI Documentation
+GET {{baseUrl}}/v3/api-docs 

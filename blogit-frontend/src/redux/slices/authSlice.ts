@@ -13,7 +13,7 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  isAuthenticated: !!localStorage.getItem('token') && !!localStorage.getItem('userId'),
   loading: false,
   error: null,
 };
@@ -24,7 +24,9 @@ export const login = createAsyncThunk(
     try {
       const response = await userService.login(credentials);
       const authResponse = response.data as AuthResponse;
-      localStorage.setItem('token', authResponse.token);
+      if (authResponse.token) {
+        localStorage.setItem('token', authResponse.token);
+      }
       return authResponse;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
@@ -37,7 +39,7 @@ export const register = createAsyncThunk(
   async (userData: UserRegistrationDto, { rejectWithValue }) => {
     try {
       const response = await userService.register(userData);
-      return response.data;
+      return response.data; // This is already the wrapped response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
     }
@@ -61,7 +63,7 @@ export const getCurrentUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await userService.getCurrentUser();
-      return response.data;
+      return response.data; // This is already the wrapped response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to get current user');
     }
@@ -86,8 +88,11 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.user = action.payload.data;
+        state.token = action.payload.token || null;
+        if (action.payload.data && action.payload.data.id) {
+          localStorage.setItem('userId', action.payload.data.id);
+        }
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -100,7 +105,7 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.data || null;
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
@@ -111,6 +116,7 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
+        localStorage.removeItem('userId');
       })
       // Get Current User
       .addCase(getCurrentUser.pending, (state) => {
@@ -118,13 +124,17 @@ const authSlice = createSlice({
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.data || null;
         state.isAuthenticated = true;
+        if (action.payload.data?.id) {
+          localStorage.setItem('userId', action.payload.data.id);
+        }
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
         state.isAuthenticated = false;
+        localStorage.removeItem('userId');
       });
   },
 });

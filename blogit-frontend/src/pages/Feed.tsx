@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { fetchFeed } from '../redux/slices/postSlice';
 import PostCard from '../components/post/PostCard';
@@ -7,13 +8,14 @@ const Feed: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { isAuthenticated } = useAppSelector(state => state.auth);
   const { feedPosts: posts, loading, error } = useAppSelector(state => state.post);
 
   const fetchPosts = async (pageNum: number) => {
     try {
       const result = await dispatch(fetchFeed({ page: pageNum - 1, size: 10 })).unwrap(); // Convert to 0-indexed for API
-      setHasMore(result.length === 10); // Assuming page size is 10
+      setHasMore(result.content?.length === 10); // Check if we have more pages
     } catch (err) {
       console.error('Error fetching posts:', err);
     }
@@ -76,7 +78,16 @@ const Feed: React.FC = () => {
       )}
       {!loading && posts.length === 0 && (
         <div className="text-center py-10">
-          <p className="text-gray-500">No posts found</p>
+          <div className="max-w-md mx-auto">
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">No posts yet</h2>
+            <p className="text-gray-500 mb-6">Be the first to share something with the community!</p>
+            <button
+              onClick={() => navigate('/create-post')}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Create Your First Post
+            </button>
+          </div>
         </div>
       )}
     </div>

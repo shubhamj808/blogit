@@ -31,8 +31,11 @@ export interface UserUpdateDto {
 }
 
 export interface AuthResponse {
-  user: UserResponseDto;
-  token: string;
+  success: boolean;
+  data: UserResponseDto;
+  message?: string;
+  timestamp?: string;
+  token?: string;
 }
 
 export interface UserResponseDto {

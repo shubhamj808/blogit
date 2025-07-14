@@ -12,7 +12,7 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/posts")
 @RequiredArgsConstructor
 public class PostController {
     
@@ -33,6 +33,18 @@ public class PostController {
                                            @RequestParam(defaultValue = "0") int page, 
                                            @RequestParam(defaultValue = "10") int size) {
         return postService.getUserPosts(userId, page, size);
+    }
+    
+    @GetMapping("/feed")
+    public Page<PostResponse> getFeed(@RequestHeader("X-User-Id") UUID userId, 
+                                        @RequestParam(defaultValue = "0") int page, 
+                                        @RequestParam(defaultValue = "10") int size) {
+        return postService.getFeed(userId, page, size);
+    }
+    
+    @GetMapping("/test")
+    public String testEndpoint() {
+        return "Post service is working!";
     }
     
     @PutMapping("/{postId}")

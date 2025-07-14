@@ -63,6 +63,13 @@ public class PostService {
         return postRepository.findByUserIdAndIsActiveOrderByCreatedAtDesc(userId, true, PageRequest.of(page, size))
                 .map(PostResponse::fromEntity);
     }
+    
+    public Page<PostResponse> getFeed(UUID userId, int page, int size) {
+        // For now, return all public posts ordered by creation date
+        // In a real implementation, you would consider user's following list, preferences, etc.
+        return postRepository.findByVisibilityAndIsActiveOrderByCreatedAtDesc(Post.PostVisibility.PUBLIC, true, PageRequest.of(page, size))
+                .map(PostResponse::fromEntity);
+    }
 
     public PostResponse updatePost(UUID postId, UUID userId, UpdatePostRequest request) {
         Post post = postRepository.findById(postId)

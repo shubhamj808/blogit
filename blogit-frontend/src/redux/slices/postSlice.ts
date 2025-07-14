@@ -275,7 +275,7 @@ const postSlice = createSlice({
       })
       .addCase(fetchFeed.fulfilled, (state, action) => {
         state.loading = false;
-        state.feedPosts = action.payload;
+        state.feedPosts = action.payload.content || [];
       })
       .addCase(fetchFeed.rejected, (state, action) => {
         state.loading = false;

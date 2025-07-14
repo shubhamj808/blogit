@@ -1,12 +1,12 @@
 import api from './axiosConfig';
-import { UserRegistrationDto, UserLoginDto, UserUpdateDto, UserResponseDto, AuthResponse } from '../types/user';
+import { UserRegistrationDto, UserLoginDto, UserUpdateDto, UserResponseDto, AuthResponse, ApiResponse } from '../types/user';
 
 const BASE_PATH = import.meta.env.VITE_USER_SERVICE_PATH || '/api/v1/users';
 
 export const userService = {
   // Authentication
   register: (data: UserRegistrationDto) =>
-    api.post<UserResponseDto>(`${BASE_PATH}/register`, data),
+    api.post<ApiResponse<UserResponseDto>>(`${BASE_PATH}/register`, data),
 
   login: (data: UserLoginDto) =>
     api.post<AuthResponse>(`${BASE_PATH}/login`, data),
@@ -16,7 +16,7 @@ export const userService = {
 
   // Profile Management
   getCurrentUser: () =>
-    api.get<UserResponseDto>(`${BASE_PATH}/me`),
+    api.get<ApiResponse<UserResponseDto>>(`${BASE_PATH}/me`),
 
   getUserByUsername: (username: string) =>
     api.get<UserResponseDto>(`${BASE_PATH}/${username}`),

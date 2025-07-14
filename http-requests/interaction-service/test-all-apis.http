@@ -1,0 +1,111 @@
+### Variables
+@baseUrl = http://localhost:8083/api/v1
+@userId = 123e4567-e89b-12d3-a456-426614174000
+@postId = 123e4567-e89b-12d3-a456-426614174001
+@commentId = 123e4567-e89b-12d3-a456-426614174002
+
+###############################################
+# LIKES
+###############################################
+
+### Like a Post
+POST {{baseUrl}}/interactions/posts/{{postId}}/likes
+X-User-Id: {{userId}}
+
+### Unlike a Post
+DELETE {{baseUrl}}/interactions/posts/{{postId}}/likes
+X-User-Id: {{userId}}
+
+### Get Post Likes
+GET {{baseUrl}}/interactions/posts/{{postId}}/likes?page=0&size=10
+
+### Check if User Liked Post
+GET {{baseUrl}}/interactions/posts/{{postId}}/likes/check
+X-User-Id: {{userId}}
+
+### Bulk Check Post Likes
+POST {{baseUrl}}/interactions/posts/likes/bulk-check
+Content-Type: application/json
+X-User-Id: {{userId}}
+
+{
+    "postIds": [
+        "{{postId}}",
+        "123e4567-e89b-12d3-a456-426614174003",
+        "123e4567-e89b-12d3-a456-426614174004"
+    ]
+}
+
+###############################################
+# COMMENTS
+###############################################
+
+### Create Comment
+POST {{baseUrl}}/interactions/posts/{{postId}}/comments
+Content-Type: application/json
+X-User-Id: {{userId}}
+
+{
+    "content": "This is a test comment"
+}
+
+### Create Reply to Comment
+POST {{baseUrl}}/interactions/posts/{{postId}}/comments
+Content-Type: application/json
+X-User-Id: {{userId}}
+
+{
+    "content": "This is a reply to the comment",
+    "parentCommentId": "{{commentId}}"
+}
+
+### Get Post Comments
+GET {{baseUrl}}/interactions/posts/{{postId}}/comments?page=0&size=20&includeReplies=true
+
+### Update Comment
+PUT {{baseUrl}}/interactions/comments/{{commentId}}
+Content-Type: application/json
+X-User-Id: {{userId}}
+
+{
+    "content": "Updated comment content"
+}
+
+### Delete Comment
+DELETE {{baseUrl}}/interactions/comments/{{commentId}}
+X-User-Id: {{userId}}
+
+### Get User's Comments
+GET {{baseUrl}}/interactions/users/{{userId}}/comments?page=0&size=20
+
+###############################################
+# COMMENT LIKES
+###############################################
+
+### Like Comment
+POST {{baseUrl}}/interactions/comments/{{commentId}}/likes
+X-User-Id: {{userId}}
+
+### Unlike Comment
+DELETE {{baseUrl}}/interactions/comments/{{commentId}}/likes
+X-User-Id: {{userId}}
+
+### Get Comment Likes
+GET {{baseUrl}}/interactions/comments/{{commentId}}/likes?page=0&size=10
+
+### Check if User Liked Comment
+GET {{baseUrl}}/interactions/comments/{{commentId}}/likes/check
+X-User-Id: {{userId}}
+
+###############################################
+# MONITORING
+###############################################
+
+### Health Check
+GET {{baseUrl}}/actuator/health
+
+### Metrics
+GET {{baseUrl}}/actuator/metrics
+
+### OpenAPI Documentation
+GET {{baseUrl}}/v3/api-docs 
