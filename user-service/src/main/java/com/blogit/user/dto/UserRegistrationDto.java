@@ -26,7 +26,7 @@ public class UserRegistrationDto {
     
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$",
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[^\\\\w\\\\s]).{8,}$",
             message = "Password must contain at least one digit, one lowercase, one uppercase, one special character")
     @Schema(description = "Password for the user", example = "SecurePassword123!")
     private String password;

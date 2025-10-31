@@ -1,9 +1,16 @@
 ### Create Post
-POST http://localhost:8082/api/posts
+POST http://localhost:8082/api/v1/posts
 Content-Type: application/json
-X-User-Id: 123e4567-e89b-12d3-a456-426614174000
+X-User-Id: 71da0869-6266-4377-93f0-f64eb613fc51
 
 {
-  "title": "Sample Post",
-  "content": "This is a sample post."
+  "title": "helll",
+  "content": "Logged in",
+  "visibility": "PUBLIC",
+  "hashtags": [
+    "#Logged in"
+  ],
+  "mediaUrls": [
+    "http://localhost:8082/api/v1/swagger-ui/index.html#/post-controller/createPost"
+  ]
 }

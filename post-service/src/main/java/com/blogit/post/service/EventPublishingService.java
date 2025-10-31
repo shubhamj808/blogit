@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,11 +31,16 @@ public class EventPublishingService {
             eventData.setTags(new ArrayList<>(post.getHashtags()));
             eventData.setDraft(false);
             eventData.setCreatedAt(post.getCreatedAt());
-            
+
             PostCreatedEvent event = PostCreatedEvent.builder()
+                    .eventId(UUID.randomUUID())  // Add this
+                    .eventType("POST_CREATED")              // Add this
+                    .version("1.0")                         // Add this
+                    .timestamp(LocalDateTime.now())         // Add this
+                    .data(eventData)
                     .data(eventData)
                     .build();
-            
+
             kafkaTemplate.send(POST_EVENTS_TOPIC, post.getId().toString(), event)
                     .whenComplete((result, ex) -> {
                         if (ex == null) {

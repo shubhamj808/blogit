@@ -172,6 +172,24 @@ otelcol.receiver.otlp "default" {
   }
 }
 
+// Filter Processor - Drop actuator health check traces
+otelcol.processor.filter "drop_health_checks" {
+  error_mode = "ignore"
+
+  traces {
+    span = [
+      // Keep ONLY root spans (drop all child spans)
+      "IsRootSpan() == false",
+      // Drop actuator endpoints
+      "attributes[\"http.route\"] != nil and IsMatch(attributes[\"http.route\"], \".*actuator/(health|prometheus)\")",
+    ]
+  }
+
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
 // Batch Processor Configuration
 otelcol.processor.batch "default" {
   timeout = "5s"
@@ -180,7 +198,7 @@ otelcol.processor.batch "default" {
   output {
     metrics = [otelcol.exporter.prometheus.default.input]
     logs    = [otelcol.exporter.loki.default.input]
-    traces  = [otelcol.exporter.otlp.tempo.input]
+    traces  = [otelcol.processor.filter.drop_health_checks.input]
   }
 }
 

@@ -23,7 +23,7 @@ GET {{baseUrl}}/actuator/info
 GET {{baseUrl}}/actuator/metrics
 
 ### 4. Swagger Documentation
-GET {{baseUrl}}/swagger-ui/index.html
+GET {{baseUrl}}/api/v1/swagger-ui/index.html
 
 ### 5. OpenAPI JSON
 GET {{baseUrl}}/v3/api-docs

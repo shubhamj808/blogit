@@ -1,7 +1,7 @@
 ### Variables
 @baseUrl = http://localhost:8081/api/v1
-@email = test@example.com
-@password = Test123!
+@email = testr@example.com
+@password = Test123**
 @authToken = {{login.response.body.data.token}}
 @userId = {{register.response.body.data.id}}
 
@@ -15,11 +15,11 @@ POST {{baseUrl}}/users/register
 Content-Type: application/json
 
 {
-    "username": "testuser",
+    "username": "testuser3",
     "email": "{{email}}",
     "password": "{{password}}",
     "fullName": "Test User",
-    "firstName": "Test",
+    "firstName": "Testr",
     "lastName": "User",
     "dateOfBirth": "1990-01-01",
     "acceptTerms": true
@@ -31,8 +31,9 @@ POST {{baseUrl}}/users/login
 Content-Type: application/json
 
 {
-    "email": "{{email}}",
-    "password": "{{password}}"
+    "usernameOrEmail": "{{email}}",
+    "password": "{{password}}",
+    "rememberMe": true
 }
 
 ### Logout
@@ -149,4 +150,4 @@ GET {{baseUrl}}/actuator/health
 GET {{baseUrl}}/actuator/metrics
 
 ### OpenAPI Documentation
-GET {{baseUrl}}/v3/api-docs 
+GET {{baseUrl}}/api/v1/swagger-ui/index.html

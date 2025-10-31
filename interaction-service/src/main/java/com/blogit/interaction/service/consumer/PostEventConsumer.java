@@ -28,6 +28,10 @@ public class PostEventConsumer {
         containerFactory = "kafkaListenerContainerFactory"
     )
     public void handlePostEvent(DomainEvent<?> event) {
+        if (event == null || event.getEventType() == null) {
+            log.error("Received null event or null event type");
+            return;
+        }
         log.info("Received post event: {}", event.getEventType());
         
         switch (event.getEventType()) {

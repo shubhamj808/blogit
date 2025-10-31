@@ -1,3 +1,4 @@
+name: blogit
 services:
   # PostgreSQL Database
   postgres:

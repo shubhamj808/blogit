@@ -9,6 +9,7 @@ import { useNotification } from '../../components/common/Notifications';
 interface PostCardProps {
   post: PostResponse;
   onLikeUpdate?: (postId: string, liked: boolean) => void;
+  onCommentAdded?: (postId: string) => void;
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post, onLikeUpdate }) => {

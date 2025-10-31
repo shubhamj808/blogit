@@ -58,4 +58,4 @@ GET {{baseUrl}}/actuator/health
 GET {{baseUrl}}/actuator/metrics
 
 ### OpenAPI Documentation
-GET {{baseUrl}}/v3/api-docs 
+GET {{baseUrl}}/api/v1/swagger-ui/index.html

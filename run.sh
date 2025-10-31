@@ -13,6 +13,7 @@ NC='\033[0m' # No Color
 VERSION="1.0.0"
 SERVICES=("user-service" "post-service" "interaction-service" "blogit-frontend")
 DOCKER_REGISTRY="blogit"
+PROJECT_NAME="blogit"
 
 # Function to print colored output
 print_status() {
@@ -21,11 +22,35 @@ print_status() {
     echo -e "${color}${message}${NC}"
 }
 
+
+
 # Function to build all services
 build_services() {
     print_status $BLUE "Building all services..."
-    chmod +x build-common.sh
-    ./build-common.sh
+    echo "Building parent POM..."
+    mvn clean install -N -DskipTests -s settings.xml -U
+
+    echo "Building common module..."
+    cd common
+    mvn clean install -DskipTests -s ../settings.xml -U
+    cd ..
+
+    # Build all services
+    services=("user-service" "post-service" "interaction-service")
+
+    for service in "${services[@]}"; do
+        echo "Building $service..."
+        cd $service
+        mvn clean package -DskipTests -s ../settings.xml -U
+        cd ..
+    done
+
+    echo "Building frontend..."
+    cd blogit-frontend
+    npm run build
+    cd ..
+
+    echo "All services built successfully!"
     if [ $? -ne 0 ]; then
         print_status $RED "Failed to build services"
         exit 1
