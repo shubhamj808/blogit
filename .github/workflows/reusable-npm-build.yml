@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: ${{ inputs.node-version || '23.7.0' }}
           cache: "npm"
-          cache-dependency-path: "package-lock.json"
+          cache-dependency-path: "**/package-lock.json"
 
       - name: Install dependencies
         run: |
