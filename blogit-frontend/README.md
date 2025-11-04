@@ -77,43 +77,37 @@ A modern, responsive frontend for the Blogit social media platform built with Re
 ## Getting Started
 
 1. Clone the repository:
-\`\`\`bash
+```bash
 git clone https://github.com/yourusername/blogit-frontend.git
-\`\`\`
+```
 
 2. Install dependencies:
-\`\`\`bash
+```bash
 cd blogit-frontend
 npm install
-\`\`\`
+```
 
-3. Create a .env file:
-\`\`\`env
+3. Create a `.env` file:
+```env
 VITE_API_BASE_URL=http://localhost:8080
 VITE_API_TIMEOUT=5000
-\`\`\`
+```
 
 4. Start the development server:
-\`\`\`bash
+```bash
 npm run dev
-\`\`\`
+```
 
 ## Project Structure
-
-\`\`\`
+```
 src/
 ├── api/              # API integration
-├── assets/           # Static assets
 ├── components/       # Reusable components
-├── features/         # Feature-specific components
-├── hooks/            # Custom hooks
-├── layouts/          # Layout components
 ├── pages/            # Page components
 ├── redux/            # Redux store and slices
-├── styles/           # Global styles
 ├── types/            # TypeScript types
 └── utils/            # Utility functions
-\`\`\`
+```
 
 ## API Integration
 

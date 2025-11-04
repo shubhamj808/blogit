@@ -1,0 +1,42 @@
+version: 2
+updates:
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/blogit-frontend" # Location of package manifests
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels:
+      - "React dependencies"
+    commit-message:
+      prefix: "[NPM]"
+
+  # Maven projects (interaction-service, post-service, etc.)
+  - package-ecosystem: "maven"
+    directories:
+      - "/interaction-service"
+      - "/post-service"
+      - "/user-service"
+      - "/common"
+      - "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    labels:
+      - "Maven dependencies"
+    commit-message:
+      prefix: "[Maven]"
+
+  # Enable version updates for Docker
+  - package-ecosystem: "docker"
+    # Look for a `Dockerfile` in the `root` directory
+    directories:
+      - "/interaction-service"
+      - "/post-service"
+      - "/user-service"
+      - "/blogit-frontend"
+      - "/"
+    # Check for updates once a week
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "[Docker]"

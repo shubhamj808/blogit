@@ -163,19 +163,9 @@ public void handleUserEvent(DomainEvent<?> event) {
    cd blogit
    ```
 
-2. **Start infrastructure services**:
+2. **Start all microservices**:
    ```bash
-   docker-compose up -d postgres redis kafka zookeeper
-   ```
-
-3. **Build all services**:
-   ```bash
-   ./build-all.sh
-   ```
-
-4. **Start all microservices**:
-   ```bash
-   ./start-all.sh
+   ./run.sh
    ```
 
 5. **Access the API Gateway**:
@@ -187,13 +177,9 @@ public void handleUserEvent(DomainEvent<?> event) {
 
 | Service | Port | Description |
 |---------|------|-------------|
-| API Gateway | 8080 | Main entry point |
 | User Service | 8081 | User management |
 | Post Service | 8082 | Post operations |
 | Interaction Service | 8083 | Likes, comments |
-| Notification Service | 8084 | Notifications |
-| Media Service | 8085 | Media handling |
-| Feed Service | 8086 | Timeline feeds |
 
 ## 🗄️ Database Schema
 
@@ -316,10 +302,6 @@ cd user-service && mvn spring-boot:run
 cd post-service && mvn spring-boot:run
 ```
 
-## 📝 License
-
-MIT License - see LICENSE.md for details
-
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -332,4 +314,3 @@ MIT License - see LICENSE.md for details
 
 For issues and questions:
 - GitHub Issues
-- Documentation: /docs

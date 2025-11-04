@@ -1,0 +1,62 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        type: choice
+        description: Backend or Frontend
+        options:
+          - backend
+          - frontend
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+# This allows a subsequently queued workflow run to interrupt previous runs
+concurrency:
+  group: "${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    env:
+      WORKING_DIRECTORY: '.'
+    # Required permissions
+    permissions:
+      pull-requests: read
+    # Set job outputs to values from filter step
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - '${{ env.WORKING_DIRECTORY }}/interaction-service/**'
+              - '${{ env.WORKING_DIRECTORY }}/post-service/**'
+              - '${{ env.WORKING_DIRECTORY }}/user-service/**'
+              - '${{ env.WORKING_DIRECTORY }}/common/**'
+              - '${{ env.WORKING_DIRECTORY }}/pom.xml'
+            frontend:
+              - '${{ env.WORKING_DIRECTORY }}/blogit-frontend/**'
+
+  backend:
+    needs: check-changes
+    if: ${{ needs.changes.outputs.backend == 'true' || github.event.inputs.message == 'backend' }}
+    uses: ./.github/workflows/reusable-java-build.yml
+
+  frontend:
+    needs: check-changes
+    if: ${{ needs.changes.outputs.frontend == 'true' || github.event.inputs.message == 'frontend' }}
+    uses: ./.github/workflows/reusable-npm-build.yml
+    with:
+      node-version: '23.7.0'

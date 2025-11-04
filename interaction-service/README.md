@@ -18,8 +18,35 @@ The Interaction Service is designed to handle user interactions with posts, such
 - OpenTelemetry
 - Swagger
 
+## Setup
+
+### Build
+```bash
+mvn clean package -DskipTests
+```
+
+### Run Locally
+```bash
+java -jar target/interaction-service-1.0.0.jar
+```
+
+### Docker
+#### Build Docker Image
+```bash
+docker build -t blogit-interaction-service .
+```
+
+#### Run with Docker Compose
+Use the following command to start all services:
+```bash
+docker-compose up -d
+```
+
 ## API Endpoints
-Detailed API specifications will be documented using Swagger.
+Check the detailed API documentation at `/swagger-ui/index.html` after starting the service.
+
+## Testing
+HTTP request files for testing the endpoints using tools like Postman or HTTPie are located in the `http-requests` directory.
 
 ## Configuration
 ### Database

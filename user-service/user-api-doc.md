@@ -1323,14 +1323,3 @@ grep "userId=550e8400-e29b-41d4-a716-446655440000" logs/user-service.log
 # Monitor logs in real-time
 tail -f logs/user-service.log | jq '.'
 ```
-
-### Support Contacts
-
-- **Development Team**: dev-team@blogit.com
-- **Infrastructure Team**: infra-team@blogit.com
-- **Security Team**: security-team@blogit.com
-- **On-Call Support**: +1-555-BLOGIT-1
-
----
-
-*This documentation is maintained by the User Service team. For updates or corrections, please create an issue in the repository or contact the development team.*

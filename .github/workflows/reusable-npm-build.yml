@@ -1,0 +1,40 @@
+name: Reusable workflow - React
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: "Node.js version to use"
+        required: false
+        default: "18"
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version || '23.7.0' }}
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm ci
+
+##     Linting will be added after adding the necessary pluggins
+#      - name: Verify formatting
+#        if: ${{ github.event_name == 'pull_request' }}
+#        run: npm run format:check
+#
+#      - name: Verify linter
+#        if: ${{ github.event_name == 'pull_request' }}
+#        run: npm run lint:check
+
+      - name: Build
+        run: npm run build
