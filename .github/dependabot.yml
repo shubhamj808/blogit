@@ -6,7 +6,8 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 5
     labels:
-      - "React dependencies"
+      - "React"
+      - "NPM"
     commit-message:
       prefix: "[NPM]"
 
@@ -22,7 +23,7 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 5
     labels:
-      - "Maven dependencies"
+      - "Maven"
     commit-message:
       prefix: "[Maven]"
 
