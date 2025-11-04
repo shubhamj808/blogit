@@ -52,7 +52,6 @@ blogit-frontend/.next/
 blogit-frontend/.cache/
 blogit-frontend/.turbo/
 blogit-frontend/yarn.lock
-blogit-frontend/package-lock.json
 blogit-frontend/npm-debug.log*
 blogit-frontend/.eslintcache
 
