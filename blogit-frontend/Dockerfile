@@ -1,5 +1,5 @@
 # Dockerfile for Blogit Frontend (React + Vite + Tailwind)
-FROM nginx:1.25-alpine
+FROM nginx:1.29-alpine
 
 # Install basic tools
 RUN apk add --no-cache curl
