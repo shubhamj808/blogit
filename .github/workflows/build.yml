@@ -32,6 +32,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
+    if: github.event_name != 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -49,12 +50,18 @@ jobs:
 
   backend:
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || github.event.inputs.message == 'backend'
+    if: |
+      always() &&
+      (needs.changes.outputs.backend == 'true' || needs.changes.result == 'skipped') &&
+      (github.event.inputs.type == 'backend' || github.event_name != 'workflow_dispatch')
     uses: ./.github/workflows/reusable-java-build.yml
 
   frontend:
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || github.event.inputs.message == 'frontend'
+    if: |
+      always() &&
+      (needs.changes.result == 'skipped' || needs.changes.outputs.frontend == 'true') &&
+      (github.event_name != 'workflow_dispatch' || github.event.inputs.type == 'frontend')
     uses: ./.github/workflows/reusable-npm-build.yml
     with:
       node-version: '23.7.0'
