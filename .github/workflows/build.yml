@@ -23,10 +23,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-changes:
+  changes:
     runs-on: ubuntu-latest
-    env:
-      WORKING_DIRECTORY: '.'
     # Required permissions
     permissions:
       pull-requests: read
@@ -41,22 +39,22 @@ jobs:
         with:
           filters: |
             backend:
-              - '${{ env.WORKING_DIRECTORY }}/interaction-service/**'
-              - '${{ env.WORKING_DIRECTORY }}/post-service/**'
-              - '${{ env.WORKING_DIRECTORY }}/user-service/**'
-              - '${{ env.WORKING_DIRECTORY }}/common/**'
-              - '${{ env.WORKING_DIRECTORY }}/pom.xml'
+              - 'interaction-service/**'
+              - 'post-service/**'
+              - 'user-service/**'
+              - 'common/**'
+              - 'pom.xml'
             frontend:
-              - '${{ env.WORKING_DIRECTORY }}/blogit-frontend/**'
+              - 'blogit-frontend/**'
 
   backend:
-    needs: check-changes
-    if: ${{ needs.changes.outputs.backend == 'true' || github.event.inputs.message == 'backend' }}
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || github.event.inputs.message == 'backend'
     uses: ./.github/workflows/reusable-java-build.yml
 
   frontend:
-    needs: check-changes
-    if: ${{ needs.changes.outputs.frontend == 'true' || github.event.inputs.message == 'frontend' }}
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || github.event.inputs.message == 'frontend'
     uses: ./.github/workflows/reusable-npm-build.yml
     with:
       node-version: '23.7.0'
