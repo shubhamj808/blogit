@@ -2,10 +2,8 @@
 FROM nginx:1.29-alpine
 
 # Install basic tools
-RUN apk add --no-cache curl
-
-# Create directory for static files
-RUN mkdir -p /usr/share/nginx/html
+RUN apk add --no-cache curl && \
+    mkdir -p /usr/share/nginx/html
 
 # Copy the built static files
 COPY dist/ /usr/share/nginx/html/
@@ -21,9 +19,5 @@ COPY nginx.conf /etc/nginx/nginx.conf
 RUN nginx -t
 
 EXPOSE 80
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD curl -f http://localhost/health || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
