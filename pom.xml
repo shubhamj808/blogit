@@ -30,6 +30,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <opentelemetry.version>1.51.0</opentelemetry.version>
+        <testcontainers.version>2.0.1</testcontainers.version>
     </properties>
 
     <repositories>
@@ -82,6 +83,8 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 
